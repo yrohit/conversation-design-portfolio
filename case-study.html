@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoice Approval — Dual-Channel Case Study</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #18181f;
+    --border: #2a2a35;
+    --accent: #6cf0c2;
+    --accent2: #f0a26c;
+    --accent3: #c26cf0;
+    --text: #e8e8f0;
+    --muted: #7070a0;
+    --chat-user: #1e2a3a;
+    --chat-ai: #1a1a28;
+    --voice-user: #2a1e1a;
+    --voice-ai: #1a1a28;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ——— HEADER ——— */
+  header {
+    padding: 60px 48px 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(108,240,194,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 12px;
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 4vw, 52px);
+    font-weight: 800;
+    line-height: 1.1;
+    max-width: 700px;
+  }
+  h1 em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    color: var(--accent);
+  }
+  .meta {
+    display: flex;
+    gap: 32px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .meta-item { color: var(--muted); font-size: 12px; }
+  .meta-item span { color: var(--text); display: block; margin-top: 2px; }
+
+  /* ——— NAV TABS ——— */
+  nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 0 48px;
+    overflow-x: auto;
+  }
+  nav button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 16px 24px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  nav button:hover { color: var(--text); }
+  nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ——— SECTIONS ——— */
+  section { display: none; padding: 48px; animation: fadeIn 0.3s ease; }
+  section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  p { color: var(--muted); margin-bottom: 16px; line-height: 1.7; }
+  .section-intro { max-width: 640px; margin-bottom: 40px; }
+
+  /* ——— OVERVIEW ——— */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 32px 0;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+    position: relative;
+  }
+  .card-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .card-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .card-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .card.accent-green { border-color: var(--accent); }
+  .card.accent-orange { border-color: var(--accent2); }
+  .card.accent-purple { border-color: var(--accent3); }
+  .card.accent-green .card-value { color: var(--accent); }
+  .card.accent-orange .card-value { color: var(--accent2); }
+  .card.accent-purple .card-value { color: var(--accent3); }
+
+  .scenario-box {
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    padding: 24px 28px;
+    margin: 24px 0;
+  }
+  .scenario-box h4 { font-family: 'Syne', sans-serif; font-size: 14px; margin-bottom: 8px; }
+
+  /* ——— CHAT FLOW ——— */
+  .flow-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 900px) { .flow-container { grid-template-columns: 1fr; } }
+
+  .flow-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+  .flow-panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .channel-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .dot-green { background: var(--accent); }
+  .dot-orange { background: var(--accent2); }
+  .flow-panel-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; }
+
+  .dialogue {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .msg {
+    max-width: 85%;
+    padding: 12px 16px;
+    font-size: 13px;
+    line-height: 1.5;
+    position: relative;
+  }
+  .msg.user {
+    background: var(--chat-user);
+    border: 1px solid #2a3a4a;
+    margin-left: auto;
+    text-align: right;
+  }
+  .msg.ai {
+    background: var(--chat-ai);
+    border: 1px solid var(--border);
+  }
+  .msg.voice-user {
+    background: var(--voice-user);
+    border: 1px solid #3a2a1a;
+    margin-left: auto;
+  }
+  .msg.voice-ai {
+    background: var(--chat-ai);
+    border: 1px solid var(--border);
+  }
+  .msg-label {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .msg.user .msg-label, .msg.voice-user .msg-label { color: #4a7a9a; }
+  .msg.ai .msg-label, .msg.voice-ai .msg-label { color: var(--accent); }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 20px;
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .annotation {
+    background: #1a1a0a;
+    border: 1px solid #3a3a1a;
+    border-left: 3px solid var(--accent2);
+    padding: 10px 14px;
+    font-size: 11px;
+    color: var(--accent2);
+    margin: 4px 20px;
+  }
+
+  /* ——— DIVERGENCE TABLE ——— */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+  }
+  .compare-table th {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .compare-table th:nth-child(2) { color: var(--accent); }
+  .compare-table th:nth-child(3) { color: var(--accent2); }
+  .compare-table td {
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .compare-table tr:nth-child(even) td { background: var(--surface); }
+  .compare-table td:first-child { color: var(--muted); font-size: 11px; letter-spacing: 0.05em; }
+  .compare-table td:nth-child(2) { color: var(--text); }
+  .compare-table td:nth-child(3) { color: var(--text); }
+
+  /* ——— PATTERNS ——— */
+  .pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .pattern-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+    transition: border-color 0.2s;
+  }
+  .pattern-card:hover { border-color: var(--accent); }
+  .pattern-num {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .pattern-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .pattern-trigger {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .pattern-trigger strong { color: var(--accent2); }
+  .pattern-example {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    font-size: 11px;
+    font-style: italic;
+    color: var(--muted);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .failure-badge {
+    display: inline-block;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: rgba(240,162,108,0.1);
+    border: 1px solid rgba(240,162,108,0.3);
+    color: var(--accent2);
+    padding: 2px 8px;
+    margin-top: 4px;
+  }
+
+  /* ——— METRICS ——— */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+  }
+  .metric-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .metric-formula {
+    font-size: 11px;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .metric-desc { font-size: 11px; color: var(--muted); line-height: 1.6; }
+
+  .ab-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .ab-variant {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px;
+  }
+  .ab-variant h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  .ab-variant.a h4 { color: var(--accent); }
+  .ab-variant.b h4 { color: var(--accent3); }
+
+  /* ——— RESPONSIBLE AI ——— */
+  .rai-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .rai-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+    border-top: 3px solid var(--accent3);
+  }
+  .rai-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent3);
+    margin-bottom: 10px;
+  }
+  .rai-body { font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+  /* ——— FOOTER ——— */
+  footer {
+    padding: 32px 48px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .highlight { color: var(--accent); font-weight: 600; }
+  .highlight-o { color: var(--accent2); }
+  .highlight-p { color: var(--accent3); }
+
+  .step-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 24px 0;
+  }
+  .step {
+    display: flex;
+    gap: 20px;
+    position: relative;
+  }
+  .step-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 40px;
+  }
+  .step-num {
+    width: 32px; height: 32px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: var(--bg);
+    z-index: 1;
+  }
+  .step-line {
+    flex: 1;
+    width: 1px;
+    background: var(--border);
+    margin: 0 auto;
+    min-height: 24px;
+  }
+  .step-content {
+    padding: 4px 0 28px;
+    flex: 1;
+  }
+  .step-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .step-desc { font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Conversation Design · Case Study</div>
+  <h1>Dual-Channel AI Design<br>for <em>Invoice Approval</em></h1>
+  <div class="meta">
+    <div class="meta-item">TASK<span>Approve Pending Invoice</span></div>
+    <div class="meta-item">CHANNELS<span>Chat + Voice</span></div>
+    <div class="meta-item">SYSTEM<span>SAP Joule / Enterprise AI</span></div>
+    <div class="meta-item">AUTHOR<span>Conversation Design Portfolio</span></div>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="show('overview', this)">01 Overview</button>
+  <button onclick="show('chat', this)">02 Chat Flow</button>
+  <button onclick="show('voice', this)">03 Voice Flow</button>
+  <button onclick="show('divergence', this)">04 Channel Divergence</button>
+  <button onclick="show('patterns', this)">05 Pattern Library</button>
+  <button onclick="show('metrics', this)">06 Metrics & A/B</button>
+  <button onclick="show('rai', this)">07 Responsible AI</button>
+</nav>
+
+<!-- ══════════ 01 OVERVIEW ══════════ -->
+<section id="overview" class="active">
+  <div class="section-intro">
+    <h2>The Task & Design Challenge</h2>
+    <p>Enterprise invoice approval is a high-stakes, multi-step workflow. Errors have real financial consequences. This case study designs the same task across two fundamentally different channels — chat and voice — demonstrating that good conversation design is not channel adaptation but channel-native thinking.</p>
+  </div>
+
+  <div class="overview-grid">
+    <div class="card accent-green">
+      <div class="card-label">Primary User</div>
+      <div class="card-value">AP Manager</div>
+      <div class="card-sub">Finance org, SAP power user, time-pressured</div>
+    </div>
+    <div class="card accent-orange">
+      <div class="card-label">Task Complexity</div>
+      <div class="card-value">High Stakes</div>
+      <div class="card-sub">Financial action, irreversible approval, audit trail required</div>
+    </div>
+    <div class="card accent-purple">
+      <div class="card-label">AI System</div>
+      <div class="card-value">LLM-Powered</div>
+      <div class="card-sub">Joule agent — not rule-based, handles ambiguity</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Design Scope</div>
+      <div class="card-value">Full Flow</div>
+      <div class="card-sub">Intent → confirm → execute → error → escalate</div>
+    </div>
+  </div>
+
+  <div class="scenario-box">
+    <h4>Scenario</h4>
+    <p>Maria is an AP Manager at a manufacturing company. She has 3 invoices pending approval over $50K. She's in back-to-back meetings. Between meetings, she uses the SAP mobile app (chat) to approve from her desk, and Joule via phone (voice) while walking between buildings.</p>
+  </div>
+
+  <h3>Design Principles Governing This Work</h3>
+  <div class="step-flow">
+    <div class="step">
+      <div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div>
+      <div class="step-content">
+        <div class="step-title">Channel-native, not channel-adapted</div>
+        <div class="step-desc">Voice flows are designed from scratch for voice cognition — not adapted from chat. Different confirmation patterns, different error recovery, different information density.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div>
+      <div class="step-content">
+        <div class="step-title">High-stakes = explicit confirmation gates</div>
+        <div class="step-desc">Financial approvals require confirmation architecture. We define exactly what triggers a gate, what information must be spoken aloud vs. surfaced visually, and when to refuse to proceed.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div>
+      <div class="step-content">
+        <div class="step-title">Failure is a first-class design surface</div>
+        <div class="step-desc">Every flow state has a defined error path. Ambiguity, partial match, system error, and user hesitation are all designed — not left to defaults.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div>
+      <div class="step-content">
+        <div class="step-title">Human in the loop is a design decision, not a fallback</div>
+        <div class="step-desc">We define explicitly when AI should defer to human judgment, surface escalation paths proactively, and avoid false confidence.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 02 CHAT FLOW ══════════ -->
+<section id="chat">
+  <div class="section-intro">
+    <h2>Chat Flow — SAP Joule (Mobile/Desktop)</h2>
+    <p>Chat allows information density, persistent history, and parallel processing. The user can scroll back, see invoice details rendered inline, and take non-linear actions. Design exploits visual affordances and async nature.</p>
+  </div>
+
+  <div class="flow-container">
+    <div class="flow-panel">
+      <div class="flow-panel-header">
+        <div class="channel-dot dot-green"></div>
+        <div class="flow-panel-title">HAPPY PATH — Single Clear Invoice</div>
+      </div>
+      <div class="dialogue">
+        <div class="msg user"><div class="msg-label">Maria</div>Do I have any invoices to approve?</div>
+        <div class="msg ai"><div class="msg-label">Joule</div>You have <span class="highlight">3 invoices</span> pending your approval:<br><br>
+          · Acme Corp — $84,200 (7 days overdue)<br>
+          · TechParts Ltd — $12,500 (due today)<br>
+          · Global Supply — $231,000 (flagged: over PO limit)<br><br>
+          Which would you like to review first?</div>
+
+        <div class="divider">user selects / types</div>
+
+        <div class="msg user"><div class="msg-label">Maria</div>Approve the Acme one</div>
+        <div class="msg ai"><div class="msg-label">Joule</div>
+          <strong>Acme Corp · INV-2024-0847</strong><br>
+          Amount: $84,200.00 · PO #4420-B<br>
+          Vendor since: 2019 · 0 disputes<br>
+          Goods confirmed received: ✓<br><br>
+          <span class="highlight">Approve this invoice?</span> This will trigger payment on the next ACH cycle (Nov 14).</div>
+
+        <div class="msg user"><div class="msg-label">Maria</div>Yes, approve it</div>
+        <div class="msg ai"><div class="msg-label">Joule</div>✓ <span class="highlight">Approved.</span> INV-2024-0847 — $84,200 to Acme Corp.<br>Reference: APR-20241107-0847<br><br>2 invoices still pending. Want to continue?</div>
+      </div>
+      <div class="annotation">✦ DESIGN NOTE: Inline invoice summary reduces tab-switching. Confirmation states all critical fields. Post-action, immediately offers continuation — reduces re-entry friction.</div>
+    </div>
+
+    <div class="flow-panel">
+      <div class="flow-panel-header">
+        <div class="channel-dot dot-orange"></div>
+        <div class="flow-panel-title">ERROR PATH — Ambiguous + Flagged Invoice</div>
+      </div>
+      <div class="dialogue">
+        <div class="msg user"><div class="msg-label">Maria</div>Approve the Global Supply invoice</div>
+        <div class="msg ai"><div class="msg-label">Joule</div>⚠ <span class="highlight-o">I need to flag something before proceeding.</span><br><br>
+          <strong>Global Supply · INV-2024-1103</strong><br>
+          Amount: $231,000 — <span class="highlight-o">exceeds PO #5501 limit by $31,000</span><br>
+          PO remaining: $200,000<br><br>
+          This requires a PO amendment or manager override. How would you like to proceed?<br><br>
+          [Request PO amendment] [Override with reason] [Reject invoice] [Escalate to controller]</div>
+
+        <div class="msg user"><div class="msg-label">Maria</div>Override — we agreed verbally to the increase</div>
+        <div class="msg ai"><div class="msg-label">Joule</div>To override, I need a brief reason for the audit trail. What should I log?<br><br>
+          <em>e.g. "Verbal PO amendment agreed 11/07 — formal amendment pending"</em></div>
+
+        <div class="msg user"><div class="msg-label">Maria</div>Verbal amendment agreed with procurement 11/7, formal amendment in process</div>
+        <div class="msg ai"><div class="msg-label">Joule</div>Got it. Final confirmation:<br><br>
+          Approving <span class="highlight-o">$231,000</span> to Global Supply<br>
+          Override reason logged: "Verbal amendment agreed with procurement 11/7, formal amendment in process"<br><br>
+          <strong>This approval will be flagged for controller review.</strong> Proceed?</div>
+
+        <div class="msg user"><div class="msg-label">Maria</div>Yes</div>
+        <div class="msg ai"><div class="msg-label">Joule</div>✓ Approved with override. Reference: APR-OVR-20241107-1103<br>Controller Sarah Chen has been notified for review.</div>
+      </div>
+      <div class="annotation">✦ DESIGN NOTE: Flag surfaces BEFORE confirmation — not after. Override requires audit reason. System still notifies controller — AI doesn't make compliance disappear, it routes it correctly.</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 40px;">Chat-Specific Design Decisions</h3>
+  <div class="overview-grid">
+    <div class="card">
+      <div class="card-label">Information Density</div>
+      <div class="card-value" style="font-size:14px;">Rich inline cards</div>
+      <div class="card-sub">Invoice details, PO status, and flags rendered in single message. No follow-up questions needed for standard approvals.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Confirmation Pattern</div>
+      <div class="card-value" style="font-size:14px;">Summary + explicit yes</div>
+      <div class="card-sub">Restates all critical data before action. Requires deliberate "yes" — not Enter key or continuation.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Error Recovery</div>
+      <div class="card-value" style="font-size:14px;">Action menu on flag</div>
+      <div class="card-sub">When a flag surfaces, provides 4 explicit options rather than leaving user to figure out next step.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Memory Use</div>
+      <div class="card-value" style="font-size:14px;">Session context</div>
+      <div class="card-sub">Remembers all 3 invoices for session. Tracks which are done. Offers to continue without re-querying.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 03 VOICE FLOW ══════════ -->
+<section id="voice">
+  <div class="section-intro">
+    <h2>Voice Flow — SAP Joule (Phone / IVR)</h2>
+    <p>Voice is <em>linear, time-bound, and screenless.</em> Working memory is limited — users cannot scroll back. Every utterance must be self-contained. Confirmation must be spoken, not scanned. Latency creates anxiety. Design must account for all of this from the first word.</p>
+  </div>
+
+  <div class="flow-container">
+    <div class="flow-panel">
+      <div class="flow-panel-header">
+        <div class="channel-dot dot-green"></div>
+        <div class="flow-panel-title">HAPPY PATH — Voice-Native Approval</div>
+      </div>
+      <div class="dialogue">
+        <div class="msg voice-user"><div class="msg-label">Maria (voice)</div>Hey Joule, what invoices do I need to approve?</div>
+        <div class="msg voice-ai"><div class="msg-label">Joule (voice)</div>You have three invoices pending. The highest priority is Acme Corp for eighty-four thousand two hundred dollars — it's seven days overdue. Want me to start there?</div>
+
+        <div class="annotation">✦ ONE invoice at a time. Highest priority first. Binary next step — reduces cognitive load vs. chat's list.</div>
+
+        <div class="msg voice-user"><div class="msg-label">Maria</div>Yes</div>
+        <div class="msg voice-ai"><div class="msg-label">Joule</div>Acme Corp, invoice ending in 0847, eighty-four thousand two hundred dollars. Purchase order confirmed. Goods received. No disputes on record. Ready to approve?</div>
+
+        <div class="annotation">✦ Key fields read aloud in deliberate sequence. No visual card — all critical info spoken. Short sentences. "Ready to approve?" closes the loop clearly.</div>
+
+        <div class="msg voice-user"><div class="msg-label">Maria</div>Approve it</div>
+        <div class="msg voice-ai"><div class="msg-label">Joule</div>Just to confirm — approving eighty-four thousand two hundred dollars to Acme Corp. Say "confirm" or "cancel."</div>
+
+        <div class="annotation">✦ CRITICAL DIVERGENCE: Voice uses a mandatory spoken confirmation word — not a yes/no question. "Confirm" vs "cancel" prevents mishearing. Required for irreversible financial actions.</div>
+
+        <div class="msg voice-user"><div class="msg-label">Maria</div>Confirm</div>
+        <div class="msg voice-ai"><div class="msg-label">Joule</div>Done. Acme Corp approved. Reference number zero eight four seven. You have two invoices remaining — want to continue?</div>
+      </div>
+    </div>
+
+    <div class="flow-panel">
+      <div class="flow-panel-header">
+        <div class="channel-dot dot-orange"></div>
+        <div class="flow-panel-title">LATENCY + ERROR PATH — Voice Edge Cases</div>
+      </div>
+      <div class="dialogue">
+        <div class="msg voice-user"><div class="msg-label">Maria</div>Approve the Global Supply invoice</div>
+        <div class="msg voice-ai"><div class="msg-label">Joule</div>I'm pulling that up... <em>[2s pause]</em> ...okay. Before I continue, I need to flag an issue with this invoice.</div>
+
+        <div class="annotation">✦ LATENCY DESIGN: "Pulling that up" fills silence. Without this, users hang up or repeat themselves. The filler phrase sets expectation of a brief wait.</div>
+
+        <div class="msg voice-ai"><div class="msg-label">Joule</div>Global Supply's invoice is for two hundred thirty-one thousand dollars, but the purchase order only covers two hundred thousand. It's over the limit by thirty-one thousand dollars. You can request an amendment, override with a reason, or reject the invoice. Which do you prefer?</div>
+
+        <div class="annotation">✦ Voice gives 3 options max — not 4 like chat. Cognitive load limit. Options read aloud as a sequence, not a visual list.</div>
+
+        <div class="msg voice-user"><div class="msg-label">Maria</div>Override</div>
+        <div class="msg voice-ai"><div class="msg-label">Joule</div>I'll need a brief reason for the audit trail. Please say your reason after the tone. <em>[tone]</em></div>
+
+        <div class="msg voice-user"><div class="msg-label">Maria</div>Verbal PO amendment agreed with procurement November seventh, formal amendment pending</div>
+        <div class="msg voice-ai"><div class="msg-label">Joule</div>Got it. Final confirmation — approving two hundred thirty-one thousand dollars to Global Supply with override. Your controller will be notified. Say "confirm" to proceed or "cancel" to stop.</div>
+
+        <div class="msg voice-user"><div class="msg-label">Maria</div>Confirm</div>
+        <div class="msg voice-ai"><div class="msg-label">Joule</div>Approved with override. Your controller has been notified. Anything else?</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 40px;">Voice-Specific Design Decisions</h3>
+  <div class="overview-grid">
+    <div class="card">
+      <div class="card-label">Information Chunking</div>
+      <div class="card-value" style="font-size:14px;">One item at a time</div>
+      <div class="card-sub">Never read all 3 invoices upfront. Present highest priority, resolve, then offer to continue.</div>
+    </div>
+    <div class="card accent-orange">
+      <div class="card-label">Confirmation Word</div>
+      <div class="card-value" style="font-size:14px;">"Confirm" keyword</div>
+      <div class="card-sub">Explicit keyword required for financial approvals. Prevents "yes/yeah/sure" ambiguity on critical irreversible actions.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Latency Handling</div>
+      <div class="card-value" style="font-size:14px;">Filler + bridging</div>
+      <div class="card-sub">"Pulling that up..." fills acoustic silence. 2s+ pauses without filler cause user anxiety and re-prompting.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Option Limit</div>
+      <div class="card-value" style="font-size:14px;">Max 3 choices</div>
+      <div class="card-sub">Voice working memory: 3 items maximum. Chat can show 4 buttons. Voice cannot.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 04 DIVERGENCE ══════════ -->
+<section id="divergence">
+  <div class="section-intro">
+    <h2>Channel Divergence Analysis</h2>
+    <p>The most important design document in this case study. These are not stylistic preferences — they are cognitive and technical constraints that force different design decisions. Each divergence is deliberate.</p>
+  </div>
+
+  <table class="compare-table">
+    <tr>
+      <th>Design Dimension</th>
+      <th>💬 Chat</th>
+      <th>🎙 Voice</th>
+    </tr>
+    <tr>
+      <td>Invoice list presentation</td>
+      <td>All 3 shown upfront as a scannable list with status, amount, and flags inline</td>
+      <td>Highest priority only, stated first. Others offered as continuation after resolution</td>
+    </tr>
+    <tr>
+      <td>Confirmation pattern</td>
+      <td>Summary card + "Yes, approve" natural language response</td>
+      <td>Summary read aloud + mandatory "confirm" keyword. "Yes/yeah/sure" not accepted for high-stakes actions</td>
+    </tr>
+    <tr>
+      <td>Latency handling</td>
+      <td>Typing indicator sufficient. Silence is expected and normal</td>
+      <td>Filler phrases required ("I'm pulling that up..."). Silence &gt;2s causes abandonment</td>
+    </tr>
+    <tr>
+      <td>Error / flag surfacing</td>
+      <td>Visual warning badge + action menu with 4 options rendered as buttons</td>
+      <td>Spoken warning + maximum 3 options read as a list. "Press 1" avoided — voice-native option naming</td>
+    </tr>
+    <tr>
+      <td>Audit reason collection</td>
+      <td>Free text field with example shown inline as placeholder</td>
+      <td>Tone prompt + open dictation. Example given verbally before the tone</td>
+    </tr>
+    <tr>
+      <td>Post-action state</td>
+      <td>Confirmation message + reference number + "continue?" inline</td>
+      <td>Confirmation spoken briefly. Reference number shortened (last 4 digits). Immediate continuation offer</td>
+    </tr>
+    <tr>
+      <td>Information density per turn</td>
+      <td>High — full invoice card, PO details, vendor history, flags in one message</td>
+      <td>Low — max 4 data points per utterance. Key number always spoken twice (currency amounts)</td>
+    </tr>
+    <tr>
+      <td>Error recovery</td>
+      <td>User can scroll up, re-read, tap a different option at any point</td>
+      <td>System must ask "Did you mean X or Y?" — no scroll back. Recovery prompts designed for voice re-entry</td>
+    </tr>
+    <tr>
+      <td>Escalation surface</td>
+      <td>4th button visible in UI at all times during flagged flows</td>
+      <td>Escalation option only spoken if first 3 options are declined or user says "I'm not sure"</td>
+    </tr>
+    <tr>
+      <td>Session memory</td>
+      <td>All 3 invoices tracked through session, user can jump to any</td>
+      <td>Sequential only. Jumping out of order requires re-querying context — system handles gracefully</td>
+    </tr>
+  </table>
+
+  <div class="scenario-box" style="border-left-color: var(--accent3);">
+    <h4>Key Design Insight</h4>
+    <p style="color: var(--text);">The largest divergence is not in the words used — it's in the <span class="highlight-p">confirmation architecture</span>. Chat can rely on visual affordances (distinct button, summary card) to create confidence before action. Voice must encode that same confidence entirely in the acoustic signal — through the sequence of information spoken, the specific confirmation word required, and the absence of ambiguous response acceptance. Designing these the same way would be a critical failure.</p>
+  </div>
+</section>
+
+<!-- ══════════ 05 PATTERNS ══════════ -->
+<section id="patterns">
+  <div class="section-intro">
+    <h2>Reusable Pattern Library</h2>
+    <p>Six patterns extracted from this flow. Each is documented for reuse across other SAP Joule workflows. These are not tied to invoice approval — they apply to any high-stakes, multi-step enterprise AI task.</p>
+  </div>
+
+  <div class="pattern-grid">
+    <div class="pattern-card">
+      <div class="pattern-num">Pattern 01</div>
+      <div class="pattern-name">Progressive Disclosure List</div>
+      <div class="pattern-trigger"><strong>Trigger:</strong> User asks to see a list of items requiring action (invoices, tickets, requests)</div>
+      <div class="pattern-example">Chat: Show full list with inline metadata<br>Voice: State count + highest priority only, offer sequential navigation</div>
+      <div class="failure-badge">Failure: Listing all items on voice → cognitive overload, user re-asks</div>
+    </div>
+
+    <div class="pattern-card">
+      <div class="pattern-num">Pattern 02</div>
+      <div class="pattern-name">High-Stakes Confirmation Gate</div>
+      <div class="pattern-trigger"><strong>Trigger:</strong> Any irreversible action above $X threshold or affecting external party</div>
+      <div class="pattern-example">Chat: Summary card + explicit "Yes, approve" required<br>Voice: Spoken summary + "confirm" keyword only — "yes" insufficient</div>
+      <div class="failure-badge">Failure: Accepting "uh-huh" or Enter key as confirmation on financial actions</div>
+    </div>
+
+    <div class="pattern-card">
+      <div class="pattern-num">Pattern 03</div>
+      <div class="pattern-name">Pre-Execution Flag Surface</div>
+      <div class="pattern-trigger"><strong>Trigger:</strong> System detects anomaly, policy violation, or risk before action execution</div>
+      <div class="pattern-example">Flag surfaces BEFORE confirmation — never after. User sees/hears the issue before being asked to decide.</div>
+      <div class="failure-badge">Failure: Showing flag only in post-approval audit — user cannot course-correct</div>
+    </div>
+
+    <div class="pattern-card">
+      <div class="pattern-num">Pattern 04</div>
+      <div class="pattern-name">Latency Bridge (Voice Only)</div>
+      <div class="pattern-trigger"><strong>Trigger:</strong> API or data retrieval expected to exceed 1.5 seconds on voice channel</div>
+      <div class="pattern-example">"I'm pulling that up..." / "Let me check that..." — filler before pause, not silence. Sets wait expectation without false completion signal.</div>
+      <div class="failure-badge">Failure: Silence &gt;2s → user repeats input, creates double-execution risk</div>
+    </div>
+
+    <div class="pattern-card">
+      <div class="pattern-num">Pattern 05</div>
+      <div class="pattern-name">Structured Override with Audit Trail</div>
+      <div class="pattern-trigger"><strong>Trigger:</strong> User requests to proceed despite system-flagged policy constraint</div>
+      <div class="pattern-example">AI does not block override — but requires: (1) explicit reason stated, (2) reason logged in audit record, (3) relevant stakeholder notified automatically</div>
+      <div class="failure-badge">Failure: Silently logging override without user awareness — erodes trust</div>
+    </div>
+
+    <div class="pattern-card">
+      <div class="pattern-num">Pattern 06</div>
+      <div class="pattern-name">Graceful Escalation Path</div>
+      <div class="pattern-trigger"><strong>Trigger:</strong> Task exceeds AI authority, user expresses uncertainty, or 2+ recovery attempts fail</div>
+      <div class="pattern-example">Chat: Escalation always visible as 4th option on flagged flows<br>Voice: Offered only if user declines offered options or says "not sure"</div>
+      <div class="failure-badge">Failure: Escalation buried in help menu — user gives up instead of routing to human</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 06 METRICS ══════════ -->
+<section id="metrics">
+  <div class="section-intro">
+    <h2>Metrics Framework & A/B Testing</h2>
+    <p>Conversation design is measurable. These metrics define success for this flow and provide the basis for iterative improvement through experimentation.</p>
+  </div>
+
+  <h3>Primary Success Metrics</h3>
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-name">Task Completion Rate</div>
+      <div class="metric-formula">Approvals completed / Approval intents initiated</div>
+      <div class="metric-desc">Target: &gt;88% chat, &gt;80% voice. Drop-off points tracked per dialogue node to identify where users abandon.</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-name">Turns to Completion</div>
+      <div class="metric-formula">Avg utterances from intent to confirmed action</div>
+      <div class="metric-desc">Target: ≤5 turns for standard approval. Flagged approvals: ≤8 turns. Optimization signal for over-clarification.</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-name">Confirmation Abandonment Rate</div>
+      <div class="metric-formula">Users who reach confirmation but don't complete</div>
+      <div class="metric-desc">High rate = confirmation friction. Particularly critical for voice "confirm" keyword pattern. Target: &lt;5%.</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-name">Error Recovery Success</div>
+      <div class="metric-formula">Users who hit error state and still complete</div>
+      <div class="metric-desc">Target: &gt;70%. Measures quality of error flow design vs. dead ends. Voice and chat tracked separately.</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-name">Escalation Rate</div>
+      <div class="metric-formula">Tasks routed to human / Total tasks started</div>
+      <div class="metric-desc">Target: &lt;10% for standard approvals. High rate indicates AI confidence calibration issues or missing flow coverage.</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-name">Repeat Input Rate (Voice)</div>
+      <div class="metric-formula">% of turns where user repeats their previous utterance</div>
+      <div class="metric-desc">High rate = latency or comprehension issues. Directly measures latency bridge effectiveness. Target: &lt;8%.</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 40px;">A/B Test Hypotheses</h3>
+
+  <div class="ab-row">
+    <div class="ab-variant a">
+      <h4>Test 1A — Confirmation Copy (Chat)</h4>
+      <p style="font-size:12px; color: var(--muted);">"Yes, approve" natural language</p>
+      <p style="font-size:12px; color: var(--muted);">Hypothesis: More natural, reduces friction</p>
+    </div>
+    <div class="ab-variant b">
+      <h4>Test 1B — Confirmation Copy (Chat)</h4>
+      <p style="font-size:12px; color: var(--muted);">"Approve $84,200 to Acme Corp" — full amount required</p>
+      <p style="font-size:12px; color: var(--muted);">Hypothesis: Higher cognitive engagement → fewer accidental approvals, but higher abandonment</p>
+    </div>
+  </div>
+  <p style="font-size:12px; color: var(--muted); margin-top: -8px; margin-bottom: 24px;">Metric: Approval completion rate + post-approval dispute rate. Track for 30 days.</p>
+
+  <div class="ab-row">
+    <div class="ab-variant a">
+      <h4>Test 2A — Voice List Presentation</h4>
+      <p style="font-size:12px; color: var(--muted);">State count + present highest priority only</p>
+      <p style="font-size:12px; color: var(--muted);">Current design</p>
+    </div>
+    <div class="ab-variant b">
+      <h4>Test 2B — Voice List Presentation</h4>
+      <p style="font-size:12px; color: var(--muted);">Read all 3 invoice names + amounts upfront</p>
+      <p style="font-size:12px; color: var(--muted);">Hypothesis: Users want full picture to make routing decision</p>
+    </div>
+  </div>
+  <p style="font-size:12px; color: var(--muted); margin-top: -8px; margin-bottom: 24px;">Metric: Turns to completion, repeat-input rate, task completion. Expect 2A wins but test to validate.</p>
+
+  <div class="ab-row">
+    <div class="ab-variant a">
+      <h4>Test 3A — Flag Surfacing Timing</h4>
+      <p style="font-size:12px; color: var(--muted);">Flag shown immediately when invoice selected</p>
+      <p style="font-size:12px; color: var(--muted);">Current design</p>
+    </div>
+    <div class="ab-variant b">
+      <h4>Test 3B — Flag Surfacing Timing</h4>
+      <p style="font-size:12px; color: var(--muted);">Show invoice summary first, flag as second message</p>
+      <p style="font-size:12px; color: var(--muted);">Hypothesis: Context before flag reduces anxiety</p>
+    </div>
+  </div>
+  <p style="font-size:12px; color: var(--muted); margin-top: -8px;">Metric: Override completion rate, escalation rate. Balances trust-building vs. pre-emptive transparency.</p>
+</section>
+
+<!-- ══════════ 07 RESPONSIBLE AI ══════════ -->
+<section id="rai">
+  <div class="section-intro">
+    <h2>Responsible AI Design</h2>
+    <p>Enterprise financial AI must be trustworthy by design — not as a compliance checkbox. These principles are embedded into the flow architecture, not applied as a post-design layer.</p>
+  </div>
+
+  <div class="rai-grid">
+    <div class="rai-card">
+      <div class="rai-title">Trust Calibration</div>
+      <div class="rai-body">Joule never overstates confidence. When invoice data is incomplete ("goods receipt unconfirmed"), the system says so explicitly before surfacing approval — it does not silently proceed. Users must be able to trust that silence means all checks passed.</div>
+    </div>
+    <div class="rai-card">
+      <div class="rai-title">Hallucination Guardrails</div>
+      <div class="rai-body">Invoice amounts, PO numbers, and vendor names are never generated by the LLM — they are fetched from SAP's system of record and passed as structured data. LLM handles only language generation around confirmed facts. No critical financial data is inferred.</div>
+    </div>
+    <div class="rai-card">
+      <div class="rai-title">Human-in-the-Loop Architecture</div>
+      <div class="rai-body">The system is designed with explicit AI authority boundaries. Joule can approve standard invoices within policy. Flagged overrides always notify the controller — the AI surfaces the escalation need rather than making the compliance judgment itself.</div>
+    </div>
+    <div class="rai-card">
+      <div class="rai-title">Audit Trail Transparency</div>
+      <div class="rai-body">Every AI-assisted approval logs: the user, timestamp, invoice details, confirmation method (voice/chat), and for overrides, the stated reason. Users are told explicitly what is being logged and that it will appear in compliance reports.</div>
+    </div>
+    <div class="rai-card">
+      <div class="rai-title">Irreversibility Signaling</div>
+      <div class="rai-body">Before any action that cannot be undone, the system communicates consequence clearly: "This will trigger payment on the next ACH cycle." Voice includes this in spoken confirmation. Users are never surprised by the permanence of an action they confirmed.</div>
+    </div>
+    <div class="rai-card">
+      <div class="rai-title">No Pressure Architecture</div>
+      <div class="rai-body">Joule never creates urgency framing to drive approval ("this is overdue, approve now"). It surfaces factual status (7 days overdue) and lets the user decide. The AI facilitates decisions — it does not nudge toward outcomes.</div>
+    </div>
+  </div>
+
+  <div class="scenario-box" style="margin-top: 40px; border-left-color: var(--accent3);">
+    <h4>Design Philosophy on AI Authority</h4>
+    <p style="color: var(--text);">The hardest responsible AI question in this flow: <span class="highlight-p">when should Joule refuse to proceed?</span> The answer: Joule can always flag, always require explicit confirmation, and always surface a human path — but it should not refuse entirely. Refusal moves the work out of the auditable system into email or hallway conversations where it's harder to track. The AI's role is to make the right path easier and the risky path more deliberate — not to be a blocker.</p>
+  </div>
+</section>
+
+<footer>
+  <span>Dual-Channel Conversation Design Case Study · Invoice Approval · SAP Joule</span>
+  <span>Built for Conversation Designer Role Application</span>
+</footer>
+
+<script>
+  function show(id, btn) {
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>

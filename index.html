@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversation Design Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Instrument+Serif:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #09090f;
+    --surface: #111118;
+    --surface2: #16161f;
+    --border: #222230;
+    --border2: #2a2a3a;
+    --ink: #eeeef8;
+    --muted: #60607a;
+    --muted2: #9090b0;
+    --green: #5ef0b0;
+    --orange: #f0a05a;
+    --purple: #b06af0;
+    --blue: #5ab0f0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ——— NOISE OVERLAY ——— */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ——— HERO ——— */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 48px 56px;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* grid lines bg */
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 80px 80px;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  .hero-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+  }
+
+  .logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .logo span { color: var(--green); }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--muted2);
+    border: 1px solid var(--border2);
+    padding: 6px 14px;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .hero-center {
+    position: relative;
+    z-index: 1;
+    padding: 80px 0 40px;
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 32px;
+    height: 1px;
+    background: var(--green);
+  }
+
+  .hero-name {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(48px, 8vw, 110px);
+    font-weight: 800;
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    margin-bottom: 32px;
+  }
+  .hero-name .line2 {
+    font-family: 'Instrument Serif', serif;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--muted);
+  }
+
+  .hero-desc {
+    max-width: 560px;
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--muted2);
+    margin-bottom: 40px;
+  }
+  .hero-desc strong { color: var(--ink); font-weight: 500; }
+
+  .hero-cta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--green);
+    color: var(--bg);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 14px 28px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    color: var(--muted2);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 14px 28px;
+    text-decoration: none;
+    border: 1px solid var(--border2);
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { color: var(--ink); border-color: var(--muted); }
+
+  .hero-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .hero-stats {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .hs-item { }
+  .hs-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .hs-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .hero-target {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.8;
+  }
+  .hero-target strong { color: var(--green); display: block; font-size: 13px; }
+
+  /* ——— SECTION COMMON ——— */
+  section { padding: 80px 56px; border-bottom: 1px solid var(--border); position: relative; z-index: 1; }
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    max-width: 200px;
+  }
+
+  /* ——— WORK SECTION ——— */
+  .work-intro {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    margin-bottom: 64px;
+    align-items: start;
+  }
+  @media (max-width: 800px) { .work-intro { grid-template-columns: 1fr; gap: 32px; } }
+
+  .work-intro h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+  }
+  .work-intro h2 em {
+    font-family: 'Instrument Serif', serif;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--muted);
+  }
+  .work-intro p {
+    color: var(--muted2);
+    font-size: 13px;
+    line-height: 1.9;
+    padding-top: 8px;
+  }
+  .work-intro p strong { color: var(--ink); }
+
+  /* ——— PROJECT CARDS ——— */
+  .projects { display: flex; flex-direction: column; gap: 2px; }
+
+  .project-card {
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
+    gap: 32px;
+    align-items: start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 36px 40px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .project-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--card-accent, var(--green));
+    transform: scaleY(0);
+    transition: transform 0.2s;
+    transform-origin: bottom;
+  }
+  .project-card:hover { background: var(--surface2); border-color: var(--border2); }
+  .project-card:hover::before { transform: scaleY(1); }
+
+  .project-card.c1 { --card-accent: var(--green); }
+  .project-card.c2 { --card-accent: var(--orange); }
+  .project-card.c3 { --card-accent: var(--purple); }
+
+  .pc-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 40px;
+    font-weight: 800;
+    color: var(--border2);
+    line-height: 1;
+    padding-top: 4px;
+  }
+  .project-card:hover .pc-num { color: var(--card-accent, var(--green)); }
+
+  .pc-body {}
+  .pc-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .pc-tag {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+  }
+  .pc-tag.green { border-color: rgba(94,240,176,0.3); color: var(--green); }
+  .pc-tag.orange { border-color: rgba(240,160,90,0.3); color: var(--orange); }
+  .pc-tag.purple { border-color: rgba(176,106,240,0.3); color: var(--purple); }
+
+  .pc-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+  .pc-desc {
+    font-size: 12px;
+    color: var(--muted2);
+    line-height: 1.8;
+    max-width: 600px;
+  }
+  .pc-highlights {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .pc-hl {
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pc-hl::before {
+    content: '→';
+    color: var(--card-accent, var(--green));
+    font-size: 12px;
+  }
+
+  .pc-arrow {
+    font-size: 24px;
+    color: var(--muted);
+    padding-top: 8px;
+    transition: all 0.2s;
+  }
+  .project-card:hover .pc-arrow { color: var(--card-accent, var(--green)); transform: translate(4px, -4px); }
+
+  /* ——— ABOUT SECTION ——— */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+  @media (max-width: 800px) { .about-grid { grid-template-columns: 1fr; gap: 40px; } }
+
+  .about-left h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 3vw, 42px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    letter-spacing: -0.01em;
+  }
+  .about-left h2 em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--orange);
+  }
+  .about-left p {
+    color: var(--muted2);
+    font-size: 13px;
+    line-height: 1.9;
+    margin-bottom: 16px;
+  }
+  .about-left p strong { color: var(--ink); }
+
+  .strengths { margin-top: 32px; display: flex; flex-direction: column; gap: 2px; }
+  .strength {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 14px 20px;
+  }
+  .strength-icon {
+    font-size: 16px;
+    width: 32px;
+    text-align: center;
+  }
+  .strength-text { font-size: 12px; color: var(--muted2); }
+  .strength-text strong { color: var(--ink); display: block; font-size: 13px; margin-bottom: 2px; }
+
+  .about-right {}
+  .jd-match {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px 32px;
+    margin-bottom: 2px;
+  }
+  .jd-match h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--muted2);
+    letter-spacing: 0.05em;
+  }
+  .match-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+  }
+  .match-row:last-child { border-bottom: none; }
+  .match-jd { font-size: 11px; color: var(--muted); flex: 1; line-height: 1.5; }
+  .match-proof { font-size: 11px; color: var(--green); text-align: right; flex: 1; line-height: 1.5; }
+
+  /* ——— PROCESS ——— */
+  .process-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+  }
+  @media (max-width: 800px) { .process-grid { grid-template-columns: 1fr 1fr; } }
+
+  .process-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px 24px;
+  }
+  .ps-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--border2);
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+  .ps-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .ps-body { font-size: 11px; color: var(--muted2); line-height: 1.7; }
+
+  /* ——— FOOTER ——— */
+  footer {
+    padding: 40px 56px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: gap;
+    gap: 24px;
+    position: relative;
+    z-index: 1;
+  }
+  .footer-left { color: var(--muted); font-size: 11px; line-height: 1.8; }
+  .footer-left strong { color: var(--ink); display: block; font-size: 13px; margin-bottom: 4px; }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--green); }
+
+  /* ——— RESPONSIVE ——— */
+  @media (max-width: 700px) {
+    .hero, section, footer { padding-left: 24px; padding-right: 24px; }
+    .project-card { grid-template-columns: 48px 1fr; }
+    .pc-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════ HERO ══════════ -->
+<div class="hero">
+  <div class="hero-top">
+    <div class="logo">CONV<span>.</span>DESIGN · PORTFOLIO</div>
+    <div class="status-pill"><div class="status-dot"></div>Available · 2024</div>
+  </div>
+
+  <div class="hero-center">
+    <div class="hero-eyebrow">Conversation Design</div>
+    <h1 class="hero-name">
+      Designing AI<br>
+      <span class="line2">that speaks your language</span>
+    </h1>
+    <p class="hero-desc">
+      A focused portfolio for the <strong>Conversation Designer role at SAP</strong> — demonstrating depth in chat and voice UX, LLM-powered agentic systems, reusable pattern frameworks, and responsible AI design for enterprise workflows.
+    </p>
+    <div class="hero-cta">
+      <a href="#work" class="btn-primary">View Work ↓</a>
+      <a href="#about" class="btn-secondary">About This Portfolio</a>
+    </div>
+  </div>
+
+  <div class="hero-bottom">
+    <div class="hero-stats">
+      <div class="hs-item"><div class="hs-num">3</div><div class="hs-label">Case Studies</div></div>
+      <div class="hs-item"><div class="hs-num">2</div><div class="hs-label">Channels Covered</div></div>
+      <div class="hs-item"><div class="hs-num">8</div><div class="hs-label">Reusable Patterns</div></div>
+      <div class="hs-item"><div class="hs-num">5</div><div class="hs-label">Prompt Iterations</div></div>
+    </div>
+    <div class="hero-target">
+      <strong>Target Role</strong>
+      Conversation Designer · AI Experiences<br>SAP Joule · Business AI Team
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ WORK ══════════ -->
+<section id="work">
+  <div class="section-label">Selected Work</div>
+
+  <div class="work-intro">
+    <h2>Three pieces.<br><em>One complete system.</em></h2>
+    <p>
+      Each piece addresses a different dimension of the role. Together they demonstrate <strong>end-to-end conversation design capability</strong> — from flow architecture and channel-native thinking, to prompt engineering discipline, to scalable pattern systems that other teams can adopt.
+      <br><br>
+      All work is designed around <strong>SAP Joule's invoice approval workflow</strong> — a real enterprise task with high stakes, compliance requirements, and genuine design complexity.
+    </p>
+  </div>
+
+  <div class="projects">
+
+    <a href="case-study.html" class="project-card c1">
+      <div class="pc-num">01</div>
+      <div class="pc-body">
+        <div class="pc-tags">
+          <span class="pc-tag green">Dual-Channel</span>
+          <span class="pc-tag">Chat Flow</span>
+          <span class="pc-tag">Voice Flow</span>
+          <span class="pc-tag">Agentic AI</span>
+          <span class="pc-tag">Responsible AI</span>
+        </div>
+        <div class="pc-title">Dual-Channel Case Study — Invoice Approval</div>
+        <div class="pc-desc">
+          The same enterprise task — approving a pending invoice in SAP — designed from scratch for both chat and voice. Not adapted. Rebuilt. Includes happy paths, flagged override flows, error handling, confirmation architecture, escalation logic, metrics framework, and A/B test hypotheses.
+        </div>
+        <div class="pc-highlights">
+          <span class="pc-hl">7 sections</span>
+          <span class="pc-hl">Channel divergence analysis</span>
+          <span class="pc-hl">6 success metrics</span>
+          <span class="pc-hl">Responsible AI principles</span>
+        </div>
+      </div>
+      <div class="pc-arrow">↗</div>
+    </a>
+
+    <a href="prompt-iteration.html" class="project-card c2">
+      <div class="pc-num">02</div>
+      <div class="pc-body">
+        <div class="pc-tags">
+          <span class="pc-tag orange">Prompt Engineering</span>
+          <span class="pc-tag">LLM Design</span>
+          <span class="pc-tag">Iteration Log</span>
+          <span class="pc-tag">Enterprise AI</span>
+        </div>
+        <div class="pc-title">Prompt Iteration Log — Invoice Flag Explanation</div>
+        <div class="pc-desc">
+          A documented 5-iteration process taking a single prompt from vague first draft to production quality. Each iteration includes diagnosis of failure, specific changes made, model output, and a scoring rubric. Demonstrates prompt design as a discipline — not trial and error.
+        </div>
+        <div class="pc-highlights">
+          <span class="pc-hl">5 documented iterations</span>
+          <span class="pc-hl">Before vs. after comparison</span>
+          <span class="pc-hl">6 transferable principles</span>
+          <span class="pc-hl">Conditional logic pattern</span>
+        </div>
+      </div>
+      <div class="pc-arrow">↗</div>
+    </a>
+
+    <a href="pattern-library.html" class="project-card c3">
+      <div class="pc-num">03</div>
+      <div class="pc-body">
+        <div class="pc-tags">
+          <span class="pc-tag purple">Pattern Library</span>
+          <span class="pc-tag">Design System</span>
+          <span class="pc-tag">Cross-Team</span>
+          <span class="pc-tag">Reusable</span>
+        </div>
+        <div class="pc-title">Conversational Pattern Library — SAP Joule</div>
+        <div class="pc-desc">
+          Eight reusable interaction patterns extracted from the case study and documented for adoption by product teams across SAP. Each pattern includes trigger conditions, behavioral definitions, decision logic, channel-specific dialogue examples, failure modes, and a decision table.
+        </div>
+        <div class="pc-highlights">
+          <span class="pc-hl">8 patterns</span>
+          <span class="pc-hl">16 failure modes documented</span>
+          <span class="pc-hl">Filterable by category</span>
+          <span class="pc-hl">Team adoption guidelines</span>
+        </div>
+      </div>
+      <div class="pc-arrow">↗</div>
+    </a>
+
+  </div>
+</section>
+
+<!-- ══════════ ABOUT ══════════ -->
+<section id="about">
+  <div class="section-label">About This Portfolio</div>
+
+  <div class="about-grid">
+    <div class="about-left">
+      <h2>Built for <em>this role.</em><br>Not a generic deck.</h2>
+      <p>
+        This portfolio was built specifically for the <strong>Conversation Designer position on SAP's AI Experiences team.</strong> Every piece is grounded in Joule's actual domain — enterprise finance workflows — not a generic demo task.
+      </p>
+      <p>
+        The background is software engineering: <strong>Java, Node.js, React, TypeScript, and UI5.</strong> This matters for conversation design because it means I can write prompt specs that engineers implement directly, define agent orchestration logic at a technical level, instrument A/B tests without eng dependency, and understand exactly where LLM behavior diverges from deterministic systems.
+      </p>
+      <p>
+        Conversation design done by someone who understands the stack is fundamentally different from design that has to be translated.
+      </p>
+
+      <div class="strengths">
+        <div class="strength">
+          <div class="strength-icon">⚙</div>
+          <div class="strength-text"><strong>Engineering Background</strong>Specs that engineers can implement without translation</div>
+        </div>
+        <div class="strength">
+          <div class="strength-icon">🎙</div>
+          <div class="strength-text"><strong>Channel-Native Thinking</strong>Voice and chat designed separately, not adapted</div>
+        </div>
+        <div class="strength">
+          <div class="strength-icon">🧩</div>
+          <div class="strength-text"><strong>Systems Thinker</strong>Patterns extracted for cross-team reuse</div>
+        </div>
+        <div class="strength">
+          <div class="strength-icon">📐</div>
+          <div class="strength-text"><strong>Prompt as Design Discipline</strong>Iteration with diagnosis, not trial and error</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-right">
+      <div class="jd-match">
+        <h4>JD REQUIREMENT → PORTFOLIO PROOF</h4>
+
+        <div class="match-row">
+          <div class="match-jd">End-to-end conversation design across chat and voice</div>
+          <div class="match-proof">Case Study: full dual-channel flow for invoice approval</div>
+        </div>
+        <div class="match-row">
+          <div class="match-jd">Craft prompts and agentic interaction patterns</div>
+          <div class="match-proof">Prompt Log: 5-iteration documented process with production output</div>
+        </div>
+        <div class="match-row">
+          <div class="match-jd">Design scalable pattern libraries adopted by other teams</div>
+          <div class="match-proof">Pattern Library: 8 patterns with team adoption guidelines</div>
+        </div>
+        <div class="match-row">
+          <div class="match-jd">Define orchestration logic and agent boundaries</div>
+          <div class="match-proof">Case Study §4: channel divergence + AI authority boundaries</div>
+        </div>
+        <div class="match-row">
+          <div class="match-jd">Success metrics, A/B experimentation, prompt iteration</div>
+          <div class="match-proof">Case Study §6: 6 KPIs + 3 A/B hypotheses with rationale</div>
+        </div>
+        <div class="match-row">
+          <div class="match-jd">Responsible AI — safety, trust calibration, human-in-loop</div>
+          <div class="match-proof">Case Study §7: 6 RAI principles embedded in architecture</div>
+        </div>
+        <div class="match-row">
+          <div class="match-jd">Latency handling, confirmations, screenless interaction</div>
+          <div class="match-proof">Case Study §3 + Pattern 04: voice-specific design decisions</div>
+        </div>
+        <div class="match-row">
+          <div class="match-jd">Hands-on experience with LLM-driven system failure modes</div>
+          <div class="match-proof">Pattern Library: 16 failure modes documented across 8 patterns</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ PROCESS ══════════ -->
+<section>
+  <div class="section-label">Design Process</div>
+  <div class="process-grid">
+    <div class="process-step">
+      <div class="ps-num">01</div>
+      <div class="ps-title">Understand the task + stakes</div>
+      <div class="ps-body">Who is the user? What are the consequences of failure? What is the AI's authority boundary? These questions precede any dialogue design.</div>
+    </div>
+    <div class="process-step">
+      <div class="ps-num">02</div>
+      <div class="ps-title">Design channel-native flows</div>
+      <div class="ps-body">Chat and voice are not adaptations of each other. Every flow is designed from scratch for its channel's cognitive constraints, timing model, and affordances.</div>
+    </div>
+    <div class="process-step">
+      <div class="ps-num">03</div>
+      <div class="ps-title">Design failure before the happy path</div>
+      <div class="ps-body">Error states, ambiguous input, system failures, and user hesitation are designed first — not handled later. Every node has a defined recovery path.</div>
+    </div>
+    <div class="process-step">
+      <div class="ps-num">04</div>
+      <div class="ps-title">Extract, document, and ship reusable patterns</div>
+      <div class="ps-body">Insights from one flow become patterns other teams can adopt. Documented with trigger conditions, failure modes, and decision logic — not just dialogue examples.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer>
+  <div class="footer-left">
+    <strong>Conversation Design Portfolio</strong>
+    Built for SAP · AI Experiences Team · Joule
+  </div>
+  <div class="footer-links">
+    <a href="case-study.html">Case Study</a>
+    <a href="prompt-iteration.html">Prompt Log</a>
+    <a href="pattern-library.html">Pattern Library</a>
+  </div>
+</footer>
+
+</body>
+</html>

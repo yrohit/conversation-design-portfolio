@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversational Pattern Library — SAP Joule</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f2f0eb;
+    --ink: #0f0e0c;
+    --surface: #ffffff;
+    --surface2: #e8e5de;
+    --border: #d4d0c8;
+    --muted: #7a7870;
+    --accent-r: #d4380d;
+    --accent-b: #1a5fa8;
+    --accent-g: #1a7a45;
+    --accent-y: #c47d00;
+    --accent-p: #6b3fa0;
+    --accent-t: #0a7a7a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ——— HEADER ——— */
+  header {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 0;
+    border-bottom: 3px solid var(--ink);
+    min-height: 220px;
+  }
+  .header-left {
+    padding: 40px 48px;
+    border-right: 1px solid var(--ink);
+  }
+  .header-right {
+    padding: 32px;
+    background: var(--ink);
+    color: var(--bg);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .system-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 5vw, 72px);
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+    margin-bottom: 16px;
+  }
+  .header-desc {
+    font-size: 13px;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.7;
+  }
+  .version-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: #888;
+    margin-bottom: 8px;
+  }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .stat { border-top: 1px solid #333; padding-top: 8px; }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    line-height: 1;
+    color: #fff;
+  }
+  .stat-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: #666; }
+
+  /* ——— FILTER NAV ——— */
+  .filter-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--ink);
+    padding: 0 48px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    border-bottom: 1px solid #333;
+  }
+  .filter-btn {
+    background: none;
+    border: none;
+    color: #666;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 14px 20px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .filter-btn:hover { color: #ccc; }
+  .filter-btn.active { color: #fff; border-bottom-color: #fff; }
+
+  /* ——— MAIN LAYOUT ——— */
+  .main { padding: 0 48px 64px; }
+
+  /* ——— PATTERN ENTRY ——— */
+  .pattern-entry {
+    border-bottom: 1px solid var(--border);
+    padding: 48px 0;
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 32px;
+    transition: opacity 0.2s;
+  }
+  .pattern-entry.hidden { display: none; }
+
+  .pattern-index {
+    padding-top: 4px;
+  }
+  .p-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    line-height: 1;
+    color: var(--border);
+  }
+  .p-cat {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 4px;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    margin-left: 4px;
+  }
+
+  .pattern-content {}
+  .p-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .p-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+  .channel-tags { display: flex; gap: 6px; flex-wrap: wrap; padding-top: 6px; }
+  .ch-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid;
+  }
+  .ch-tag.chat { color: var(--accent-b); border-color: var(--accent-b); background: rgba(26,95,168,0.06); }
+  .ch-tag.voice { color: var(--accent-p); border-color: var(--accent-p); background: rgba(107,63,160,0.06); }
+  .ch-tag.both { color: var(--accent-t); border-color: var(--accent-t); background: rgba(10,122,122,0.06); }
+
+  .p-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .p-cell {
+    background: var(--surface);
+    padding: 18px 20px;
+  }
+  .p-cell.wide { grid-column: span 2; }
+  .p-cell.full { grid-column: span 3; }
+  .cell-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .cell-body { font-size: 12px; line-height: 1.7; color: var(--ink); }
+  .cell-body.mono { font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+
+  .p-examples {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .example-col { background: var(--surface); padding: 18px 20px; }
+  .example-col h5 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .example-col.chat-col h5 { color: var(--accent-b); }
+  .example-col.voice-col h5 { color: var(--accent-p); }
+  .example-col.single-col h5 { color: var(--accent-t); }
+
+  .dialogue-mini { display: flex; flex-direction: column; gap: 8px; }
+  .dm { padding: 8px 12px; font-size: 11px; line-height: 1.5; }
+  .dm.u { background: #f0f4fa; border-left: 2px solid var(--accent-b); font-style: italic; }
+  .dm.a { background: var(--bg); border-left: 2px solid var(--border); }
+  .dm.u.v { background: #f5f0fa; border-left-color: var(--accent-p); }
+  .dm-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--muted); margin-bottom: 2px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+  .failure-strip {
+    background: rgba(212,56,13,0.06);
+    border: 1px solid rgba(212,56,13,0.2);
+    border-left: 3px solid var(--accent-r);
+    padding: 12px 16px;
+    margin-bottom: 16px;
+  }
+  .fs-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent-r);
+    margin-bottom: 4px;
+  }
+  .fs-body { font-size: 12px; color: #7a2010; line-height: 1.6; }
+
+  .decision-row {
+    display: flex;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .decision-cell {
+    background: var(--surface);
+    padding: 14px 16px;
+    flex: 1;
+  }
+  .dc-q {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    letter-spacing: 0.1em;
+  }
+  .dc-a { font-size: 12px; }
+  .dc-a.yes { color: var(--accent-g); }
+  .dc-a.no { color: var(--accent-r); }
+  .dc-a.cond { color: var(--accent-y); }
+
+  /* ——— PRINCIPLES SECTION ——— */
+  .principles {
+    margin-top: 64px;
+    padding-top: 48px;
+    border-top: 3px solid var(--ink);
+  }
+  .principles h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    margin-bottom: 8px;
+  }
+  .principles-sub { color: var(--muted); font-size: 13px; margin-bottom: 32px; }
+  .principles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .principle-cell {
+    background: var(--surface);
+    padding: 24px;
+  }
+  .pc-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .pc-title {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .pc-body { font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+  /* ——— HOW TO USE ——— */
+  .how-to {
+    margin-top: 48px;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 40px 48px;
+  }
+  .ht-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 16px;
+  }
+  .ht-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    margin-bottom: 20px;
+  }
+  .ht-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .ht-step { border-top: 1px solid #333; padding-top: 16px; }
+  .ht-step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: #444;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .ht-step-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .ht-step-body { font-size: 11px; color: #777; line-height: 1.6; }
+
+  footer {
+    background: var(--ink);
+    color: #444;
+    padding: 20px 48px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid #222;
+  }
+
+  @media (max-width: 800px) {
+    header { grid-template-columns: 1fr; }
+    .header-right { display: none; }
+    .p-grid { grid-template-columns: 1fr 1fr; }
+    .p-cell.wide { grid-column: span 2; }
+    .p-cell.full { grid-column: span 2; }
+    .principles-grid { grid-template-columns: 1fr 1fr; }
+    .ht-grid { grid-template-columns: 1fr 1fr; }
+    .pattern-entry { grid-template-columns: 50px 1fr; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="system-label">SAP Joule · AI Experience Design · v1.0</div>
+    <h1>CONVERSATIONAL<br>PATTERN LIBRARY</h1>
+    <p class="header-desc">A reusable system of interaction patterns for LLM-powered enterprise AI. Each pattern defines trigger conditions, behavioral logic, channel-specific implementation, failure modes, and decision criteria for adoption by product teams across the organization.</p>
+  </div>
+  <div class="header-right">
+    <div class="version-badge">PATTERN_LIB · REV 1.0 · 2024</div>
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-num">8</div><div class="stat-label">Patterns</div></div>
+      <div class="stat"><div class="stat-num">2</div><div class="stat-label">Channels</div></div>
+      <div class="stat"><div class="stat-num">16</div><div class="stat-label">Failure modes</div></div>
+      <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Use cases</div></div>
+    </div>
+  </div>
+</header>
+
+<nav class="filter-bar">
+  <button class="filter-btn active" onclick="filter('all', this)">All Patterns</button>
+  <button class="filter-btn" onclick="filter('confirmation', this)">Confirmation</button>
+  <button class="filter-btn" onclick="filter('error', this)">Error & Recovery</button>
+  <button class="filter-btn" onclick="filter('clarification', this)">Clarification</button>
+  <button class="filter-btn" onclick="filter('escalation', this)">Escalation</button>
+  <button class="filter-btn" onclick="filter('latency', this)">Latency</button>
+  <button class="filter-btn" onclick="filter('disclosure', this)">Disclosure</button>
+</nav>
+
+<div class="main">
+
+  <!-- ════ PATTERN 01 ════ -->
+  <div class="pattern-entry" data-cat="confirmation">
+    <div class="pattern-index">
+      <div class="p-num">01</div>
+      <div class="p-cat">Confirmation</div>
+    </div>
+    <div class="pattern-content">
+      <div class="p-header">
+        <div class="p-name">HIGH-STAKES CONFIRMATION GATE</div>
+        <div class="channel-tags">
+          <span class="ch-tag chat">Chat</span>
+          <span class="ch-tag voice">Voice</span>
+        </div>
+      </div>
+
+      <div class="p-grid">
+        <div class="p-cell">
+          <div class="cell-label">Trigger Condition</div>
+          <div class="cell-body">Any irreversible action above defined financial threshold, affecting an external party, or requiring audit record. Examples: invoice approval, PO creation, payment release, vendor onboarding.</div>
+        </div>
+        <div class="p-cell">
+          <div class="cell-label">Behavioral Definition</div>
+          <div class="cell-body">AI must restate all critical parameters before executing action. User must provide deliberate, explicit confirmation — not passive continuation. Action must not proceed on ambiguous input.</div>
+        </div>
+        <div class="p-cell">
+          <div class="cell-label">Decision Logic</div>
+          <div class="cell-body mono">IF action.isIrreversible OR<br>action.amount > threshold OR<br>action.affectsExternalParty<br>→ REQUIRE confirmation gate<br>→ RESTATE: vendor, amount, PO<br>→ ACCEPT: explicit confirm only</div>
+        </div>
+      </div>
+
+      <div class="p-examples">
+        <div class="example-col chat-col">
+          <h5>💬 Chat Implementation</h5>
+          <div class="dialogue-mini">
+            <div class="dm a"><div class="dm-label">Joule</div>Approving $84,200 to Acme Corp · PO #4420-B · Payment: Nov 14 ACH cycle. Confirm?</div>
+            <div class="dm u"><div class="dm-label">User</div>Yes, approve it</div>
+            <div class="dm a"><div class="dm-label">Joule</div>✓ Approved. Ref: APR-20241107-0847</div>
+          </div>
+        </div>
+        <div class="example-col voice-col">
+          <h5>🎙 Voice Implementation</h5>
+          <div class="dialogue-mini">
+            <div class="dm a"><div class="dm-label">Joule</div>Just to confirm — approving eighty-four thousand two hundred dollars to Acme Corp. Say "confirm" or "cancel."</div>
+            <div class="dm u v"><div class="dm-label">User</div>Confirm</div>
+            <div class="dm a"><div class="dm-label">Joule</div>Done. Acme Corp approved. Reference number zero eight four seven.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="failure-strip">
+        <div class="fs-label">Failure Modes</div>
+        <div class="fs-body"><strong>F1:</strong> Accepting "uh-huh", Enter key, or message continuation as confirmation on financial actions — creates accidental approvals.<br><strong>F2:</strong> Not restating critical parameters — user confirms without knowing exact amount.<br><strong>F3 (Voice):</strong> Accepting "yes" or "sure" — mishearing risk on irreversible actions. Keyword "confirm" required.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="decision-cell"><div class="dc-q">Required on all actions?</div><div class="dc-a no">No — standard views/queries skip this</div></div>
+        <div class="decision-cell"><div class="dc-q">Voice uses keyword?</div><div class="dc-a yes">Yes — "confirm" only, not "yes"</div></div>
+        <div class="decision-cell"><div class="dc-q">Parameters restated?</div><div class="dc-a yes">Yes — always, before confirmation ask</div></div>
+        <div class="decision-cell"><div class="dc-q">Cancellable after confirm?</div><div class="dc-a no">No — communicate this upfront</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PATTERN 02 ════ -->
+  <div class="pattern-entry" data-cat="disclosure">
+    <div class="pattern-index">
+      <div class="p-num">02</div>
+      <div class="p-cat">Disclosure</div>
+    </div>
+    <div class="pattern-content">
+      <div class="p-header">
+        <div class="p-name">PRE-EXECUTION FLAG SURFACE</div>
+        <div class="channel-tags">
+          <span class="ch-tag both">Both Channels</span>
+        </div>
+      </div>
+
+      <div class="p-grid">
+        <div class="p-cell">
+          <div class="cell-label">Trigger Condition</div>
+          <div class="cell-body">System detects policy violation, risk signal, data anomaly, or compliance issue before the user requests execution. Flag must be surfaced before — not during or after — the confirmation gate.</div>
+        </div>
+        <div class="p-cell">
+          <div class="cell-label">Behavioral Definition</div>
+          <div class="cell-body">AI interrupts the expected flow with the specific issue and specific numbers. User receives full information before making a decision. AI does not proceed silently past a flag.</div>
+        </div>
+        <div class="p-cell">
+          <div class="cell-label">Decision Logic</div>
+          <div class="cell-body mono">IF flag.detected<br>→ SURFACE before confirmation<br>→ STATE: exact issue + numbers<br>→ OFFER: constrained resolution set<br>→ NEVER proceed silently</div>
+        </div>
+      </div>
+
+      <div class="p-examples">
+        <div class="example-col chat-col">
+          <h5>💬 Chat — Flag First</h5>
+          <div class="dialogue-mini">
+            <div class="dm a"><div class="dm-label">Joule</div>⚠ Before I continue — this invoice ($231K) exceeds PO #5501 limit by $31,000. Choose how to resolve:<br>1. Request PO amendment<br>2. Override with reason<br>3. Reject invoice<br><br>If unsure, I can escalate to your controller.</div>
+          </div>
+        </div>
+        <div class="example-col voice-col">
+          <h5>🎙 Voice — Flag First</h5>
+          <div class="dialogue-mini">
+            <div class="dm a"><div class="dm-label">Joule</div>Before I continue, I need to flag an issue. This invoice exceeds the PO limit by thirty-one thousand dollars. You can request an amendment, approve with an override, or reject it. Which do you prefer?</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="failure-strip">
+        <div class="fs-label">Failure Modes</div>
+        <div class="fs-body"><strong>F1:</strong> Showing flag only in post-approval audit log — user cannot course-correct and loses trust in AI.<br><strong>F2:</strong> Vague flag language ("there may be an issue") — forces follow-up questions, wastes time.<br><strong>F3:</strong> Surfacing flag after confirmation ask — user already committed mentally, flag feels like a gotcha.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="decision-cell"><div class="dc-q">Flag before or after summary?</div><div class="dc-a yes">Before — always pre-confirmation</div></div>
+        <div class="decision-cell"><div class="dc-q">Specific numbers required?</div><div class="dc-a yes">Yes — never vague ("some overage")</div></div>
+        <div class="decision-cell"><div class="dc-q">Can user dismiss flag?</div><div class="dc-a cond">Yes — with explicit override + reason</div></div>
+        <div class="decision-cell"><div class="dc-q">AI proceeds on silent flag?</div><div class="dc-a no">Never</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PATTERN 03 ════ -->
+  <div class="pattern-entry" data-cat="disclosure">
+    <div class="pattern-index">
+      <div class="p-num">03</div>
+      <div class="p-cat">Disclosure</div>
+    </div>
+    <div class="pattern-content">
+      <div class="p-header">
+        <div class="p-name">PROGRESSIVE DISCLOSURE LIST</div>
+        <div class="channel-tags">
+          <span class="ch-tag chat">Chat</span>
+          <span class="ch-tag voice">Voice</span>
+        </div>
+      </div>
+
+      <div class="p-grid">
+        <div class="p-cell">
+          <div class="cell-label">Trigger Condition</div>
+          <div class="cell-body">User requests a list of actionable items (invoices, tickets, tasks, requests). List contains 2 or more items. Applies when user must select and act on items sequentially.</div>
+        </div>
+        <div class="p-cell">
+          <div class="cell-label">Behavioral Definition</div>
+          <div class="cell-body">Chat: Show full list with inline metadata sorted by priority. Voice: State count and present highest-priority item only — never read the full list aloud. Offer sequential navigation after each resolution.</div>
+        </div>
+        <div class="p-cell">
+          <div class="cell-label">Decision Logic</div>
+          <div class="cell-body mono">Chat:<br>→ SHOW all items + metadata<br>→ SORT by priority/urgency<br><br>Voice:<br>→ STATE count ("You have 3...")<br>→ PRESENT highest priority only<br>→ OFFER continuation after each</div>
+        </div>
+      </div>
+
+      <div class="p-examples">
+        <div class="example-col chat-col">
+          <h5>💬 Chat — Full List</h5>
+          <div class="dialogue-mini">
+            <div class="dm a"><div class="dm-label">Joule</div>You have 3 invoices pending:<br>· Acme Corp — $84,200 (7 days overdue)<br>· TechParts Ltd — $12,500 (due today)<br>· Global Supply — $231,000 ⚠ over PO limit<br><br>Which would you like to review first?</div>
+          </div>
+        </div>
+        <div class="example-col voice-col">
+          <h5>🎙 Voice — One at a Time</h5>
+          <div class="dialogue-mini">
+            <div class="dm a"><div class="dm-label">Joule</div>You have three invoices pending. The highest priority is Acme Corp for eighty-four thousand dollars — seven days overdue. Want me to start there?</div>
+            <div class="dm u v"><div class="dm-label">User</div>Yes</div>
+            <div class="dm a"><div class="dm-label">Joule (after resolution)</div>Done. Two invoices remaining — want to continue?</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="failure-strip">
+        <div class="fs-label">Failure Modes</div>
+        <div class="fs-body"><strong>F1 (Voice):</strong> Reading all items aloud — exceeds working memory, user asks "can you repeat that?" or abandons.<br><strong>F2 (Chat):</strong> Not showing metadata inline — user must drill into each item to evaluate priority, wastes navigation.<br><strong>F3:</strong> Alphabetical default sort — urgency and financial risk should determine order, not name.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="decision-cell"><div class="dc-q">Voice reads full list?</div><div class="dc-a no">Never — one item at a time</div></div>
+        <div class="decision-cell"><div class="dc-q">Sort order?</div><div class="dc-a cond">Priority: overdue → flagged → amount</div></div>
+        <div class="decision-cell"><div class="dc-q">Max voice options per turn?</div><div class="dc-a yes">3 items maximum</div></div>
+        <div class="decision-cell"><div class="dc-q">Continue prompt after each?</div><div class="dc-a yes">Always — reduce re-entry friction</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PATTERN 04 ════ -->
+  <div class="pattern-entry" data-cat="latency">
+    <div class="pattern-index">
+      <div class="p-num">04</div>
+      <div class="p-cat">Latency</div>
+    </div>
+    <div class="pattern-content">
+      <div class="p-header">
+        <div class="p-name">LATENCY BRIDGE</div>
+        <div class="channel-tags">
+          <span class="ch-tag voice">Voice Only</span>
+        </div>
+      </div>
+
+      <div class="p-grid">
+        <div class="p-cell">
+          <div class="cell-label">Trigger Condition</div>
+          <div class="cell-body">Any voice interaction where API call, data retrieval, or processing is expected to take more than 1.5 seconds. Silence beyond this threshold causes user anxiety, repetition, or call abandonment.</div>
+        </div>
+        <div class="p-cell">
+          <div class="cell-label">Behavioral Definition</div>
+          <div class="cell-body">AI produces a bridging phrase immediately after user utterance — before the data is available. Phrase must set expectation of a brief pause without signaling completion or failure. Never use silence as a response.</div>
+        </div>
+        <div class="p-cell">
+          <div class="cell-label">Decision Logic</div>
+          <div class="cell-body mono">IF expected_latency > 1500ms<br>→ EMIT bridge phrase immediately<br>→ PAUSE (data retrieval)<br>→ CONTINUE with result<br><br>Bridge phrases:<br>"I'm pulling that up..."<br>"Let me check that..."<br>"One moment..."</div>
+        </div>
+      </div>
+
+      <div class="p-examples">
+        <div class="example-col single-col" style="grid-column: span 2;">
+          <h5>🎙 Voice — Latency Bridge in Context</h5>
+          <div class="dialogue-mini">
+            <div class="dm u v"><div class="dm-label">User</div>What's the status of invoice 1103?</div>
+            <div class="dm a"><div class="dm-label">Joule (immediate — 0ms)</div>I'm pulling that up...</div>
+            <div class="dm a" style="opacity:0.5;"><div class="dm-label">[ 2.1 second API call ]</div></div>
+            <div class="dm a"><div class="dm-label">Joule (after retrieval)</div>Invoice 1103 from Global Supply is pending approval. It has a flag — the amount exceeds your PO limit. Want me to walk you through the options?</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="failure-strip">
+        <div class="fs-label">Failure Modes</div>
+        <div class="fs-body"><strong>F1:</strong> Silence &gt;2s — user repeats input, creating double-execution risk on action flows.<br><strong>F2:</strong> False completion signal ("Got it!" then pause) — user thinks the action ran before it did.<br><strong>F3:</strong> Over-explaining the delay ("I'm searching our database systems for your invoice...") — verbose, patronizing, creates longer dead air.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="decision-cell"><div class="dc-q">Required on voice?</div><div class="dc-a yes">Yes — any call &gt;1.5s</div></div>
+        <div class="decision-cell"><div class="dc-q">Required on chat?</div><div class="dc-a no">No — typing indicator sufficient</div></div>
+        <div class="decision-cell"><div class="dc-q">Bridge phrase length?</div><div class="dc-a yes">3–5 words max</div></div>
+        <div class="decision-cell"><div class="dc-q">Vary phrases?</div><div class="dc-a cond">Yes — avoid repetitive filler</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PATTERN 05 ════ -->
+  <div class="pattern-entry" data-cat="error">
+    <div class="pattern-index">
+      <div class="p-num">05</div>
+      <div class="p-cat">Error</div>
+    </div>
+    <div class="pattern-content">
+      <div class="p-header">
+        <div class="p-name">STRUCTURED OVERRIDE WITH AUDIT TRAIL</div>
+        <div class="channel-tags">
+          <span class="ch-tag both">Both Channels</span>
+        </div>
+      </div>
+
+      <div class="p-grid">
+        <div class="p-cell">
+          <div class="cell-label">Trigger Condition</div>
+          <div class="cell-body">User requests to proceed despite a system-flagged policy constraint. Override is permitted within role authority but requires justification for compliance record.</div>
+        </div>
+        <div class="p-cell">
+          <div class="cell-label">Behavioral Definition</div>
+          <div class="cell-body">AI does not block the override — it structures it. Requires: (1) explicit reason from user, (2) reason logged in audit record, (3) relevant stakeholder notified. User is told each of these will happen before they proceed.</div>
+        </div>
+        <div class="p-cell">
+          <div class="cell-label">Decision Logic</div>
+          <div class="cell-body mono">IF user.requests override<br>→ REQUEST reason (mandatory)<br>→ CONFIRM: reason will be logged<br>→ CONFIRM: controller notified<br>→ EXECUTE only after explicit confirm<br>→ NEVER silent override</div>
+        </div>
+      </div>
+
+      <div class="p-examples">
+        <div class="example-col chat-col">
+          <h5>💬 Chat Override Flow</h5>
+          <div class="dialogue-mini">
+            <div class="dm u"><div class="dm-label">User</div>Override — we agreed verbally to the PO increase</div>
+            <div class="dm a"><div class="dm-label">Joule</div>To override, I need a brief reason for the audit trail. What should I log?</div>
+            <div class="dm u"><div class="dm-label">User</div>Verbal amendment agreed with procurement 11/7, formal in process</div>
+            <div class="dm a"><div class="dm-label">Joule</div>Approving $231,000 with override. Reason logged. Controller notified. Confirm?</div>
+          </div>
+        </div>
+        <div class="example-col voice-col">
+          <h5>🎙 Voice Override Flow</h5>
+          <div class="dialogue-mini">
+            <div class="dm u v"><div class="dm-label">User</div>Override</div>
+            <div class="dm a"><div class="dm-label">Joule</div>I'll need a brief reason for the record. Please say it after the tone. [tone]</div>
+            <div class="dm u v"><div class="dm-label">User</div>Verbal PO amendment agreed with procurement November seventh</div>
+            <div class="dm a"><div class="dm-label">Joule</div>Approving with override. Your controller will be notified. Say "confirm" to proceed.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="failure-strip">
+        <div class="fs-label">Failure Modes</div>
+        <div class="fs-body"><strong>F1:</strong> Executing override without requiring reason — compliance gap, no audit trail, user surprised later.<br><strong>F2:</strong> Notifying controller silently without telling user — erodes trust ("did the AI tell my boss?").<br><strong>F3:</strong> Blocking override entirely — pushes decision to untracked channels (email, phone), harder to audit.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="decision-cell"><div class="dc-q">Reason required?</div><div class="dc-a yes">Yes — always mandatory</div></div>
+        <div class="decision-cell"><div class="dc-q">User told of logging?</div><div class="dc-a yes">Yes — before confirmation</div></div>
+        <div class="decision-cell"><div class="dc-q">Stakeholder notified?</div><div class="dc-a yes">Yes — auto, immediately</div></div>
+        <div class="decision-cell"><div class="dc-q">Override blocked by AI?</div><div class="dc-a no">No — structured, never blocked</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PATTERN 06 ════ -->
+  <div class="pattern-entry" data-cat="escalation">
+    <div class="pattern-index">
+      <div class="p-num">06</div>
+      <div class="p-cat">Escalation</div>
+    </div>
+    <div class="pattern-content">
+      <div class="p-header">
+        <div class="p-name">GRACEFUL ESCALATION PATH</div>
+        <div class="channel-tags">
+          <span class="ch-tag chat">Chat</span>
+          <span class="ch-tag voice">Voice</span>
+        </div>
+      </div>
+
+      <div class="p-grid">
+        <div class="p-cell">
+          <div class="cell-label">Trigger Condition</div>
+          <div class="cell-body">Task exceeds AI authority. User expresses uncertainty. 2+ recovery attempts fail. User explicitly requests human. Any compliance decision requiring human judgment.</div>
+        </div>
+        <div class="p-cell">
+          <div class="cell-label">Behavioral Definition</div>
+          <div class="cell-body">Chat: Escalation always visible as a persistent option during flagged flows. Voice: Offered proactively if user declines offered options or says "I'm not sure." Never buried in a help menu.</div>
+        </div>
+        <div class="p-cell">
+          <div class="cell-label">Decision Logic</div>
+          <div class="cell-body mono">Chat: SHOW escalation as 4th option<br>on all flagged flows (always visible)<br><br>Voice: OFFER escalation if:<br>→ user says "not sure" / hesitates<br>→ user declines all options<br>→ 2+ failed recoveries<br>→ authority threshold exceeded</div>
+        </div>
+      </div>
+
+      <div class="p-examples">
+        <div class="example-col chat-col">
+          <h5>💬 Chat — Always Visible</h5>
+          <div class="dialogue-mini">
+            <div class="dm a"><div class="dm-label">Joule</div>This invoice exceeds your PO limit. Choose a resolution:<br>1. Request PO amendment<br>2. Override with reason<br>3. Reject invoice<br>4. Escalate to controller →</div>
+          </div>
+        </div>
+        <div class="example-col voice-col">
+          <h5>🎙 Voice — Triggered by Hesitation</h5>
+          <div class="dialogue-mini">
+            <div class="dm u v"><div class="dm-label">User</div>I'm not sure what to do here</div>
+            <div class="dm a"><div class="dm-label">Joule</div>No problem — I can loop in your controller Sarah Chen to review this. Want me to send her a summary and flag it for her attention?</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="failure-strip">
+        <div class="fs-label">Failure Modes</div>
+        <div class="fs-body"><strong>F1:</strong> Escalation only in help/settings menu — user gives up before finding it, task abandoned or moved off-system.<br><strong>F2 (Voice):</strong> Offering escalation on every turn — creates noise, undermines AI confidence signal.<br><strong>F3:</strong> Escalation without context transfer — controller receives no summary, user must re-explain everything.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="decision-cell"><div class="dc-q">Chat: always visible?</div><div class="dc-a yes">Yes — on all flagged flows</div></div>
+        <div class="decision-cell"><div class="dc-q">Voice: proactively offered?</div><div class="dc-a cond">Only on hesitation/failure signals</div></div>
+        <div class="decision-cell"><div class="dc-q">Context transferred?</div><div class="dc-a yes">Yes — summary auto-generated</div></div>
+        <div class="decision-cell"><div class="dc-q">User told who receives?</div><div class="dc-a yes">Yes — name the human explicitly</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PATTERN 07 ════ -->
+  <div class="pattern-entry" data-cat="clarification">
+    <div class="pattern-index">
+      <div class="p-num">07</div>
+      <div class="p-cat">Clarification</div>
+    </div>
+    <div class="pattern-content">
+      <div class="p-header">
+        <div class="p-name">AMBIGUOUS INPUT RESOLUTION</div>
+        <div class="channel-tags">
+          <span class="ch-tag both">Both Channels</span>
+        </div>
+      </div>
+
+      <div class="p-grid">
+        <div class="p-cell">
+          <div class="cell-label">Trigger Condition</div>
+          <div class="cell-body">User input matches multiple possible intents or entities, or is underspecified for the required action. AI cannot proceed without disambiguation — wrong guess has cost (wrong invoice approved).</div>
+        </div>
+        <div class="p-cell">
+          <div class="cell-label">Behavioral Definition</div>
+          <div class="cell-body">AI presents the top 2–3 candidate interpretations as explicit options, not open questions. Never guesses silently on high-stakes actions. On low-stakes queries, can proceed with best guess + offer correction.</div>
+        </div>
+        <div class="p-cell">
+          <div class="cell-label">Decision Logic</div>
+          <div class="cell-body mono">IF input.matchCount > 1<br>AND action.isHighStakes<br>→ PRESENT top 2-3 interpretations<br>→ ASK user to select<br><br>IF action.isLowStakes<br>→ PROCEED with best match<br>→ STATE assumption explicitly<br>→ OFFER correction</div>
+        </div>
+      </div>
+
+      <div class="p-examples">
+        <div class="example-col chat-col">
+          <h5>💬 Chat — Ambiguous Vendor</h5>
+          <div class="dialogue-mini">
+            <div class="dm u"><div class="dm-label">User</div>Approve the Global invoice</div>
+            <div class="dm a"><div class="dm-label">Joule</div>I found two matching invoices:<br>· Global Supply — $231,000 (flagged)<br>· Global Logistics — $14,800 (clear)<br><br>Which did you mean?</div>
+          </div>
+        </div>
+        <div class="example-col voice-col">
+          <h5>🎙 Voice — Ambiguous Vendor</h5>
+          <div class="dialogue-mini">
+            <div class="dm u v"><div class="dm-label">User</div>Approve the Global invoice</div>
+            <div class="dm a"><div class="dm-label">Joule</div>I found two — Global Supply for two hundred thirty-one thousand, or Global Logistics for fourteen thousand eight hundred. Which one?</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="failure-strip">
+        <div class="fs-label">Failure Modes</div>
+        <div class="fs-body"><strong>F1:</strong> Silent best-guess on high-stakes action — wrong invoice approved, financial error, compliance issue.<br><strong>F2:</strong> Open question ("Which invoice did you mean?") without surfacing options — forces user to recall exact name or amount.<br><strong>F3:</strong> Asking for clarification on low-stakes queries — unnecessary friction, makes AI feel slow and bureaucratic.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="decision-cell"><div class="dc-q">Silent guess on high-stakes?</div><div class="dc-a no">Never</div></div>
+        <div class="decision-cell"><div class="dc-q">Max options presented?</div><div class="dc-a yes">3 (chat) / 2 (voice)</div></div>
+        <div class="decision-cell"><div class="dc-q">Low-stakes: proceed + state?</div><div class="dc-a yes">Yes — with correction offer</div></div>
+        <div class="decision-cell"><div class="dc-q">Ask before showing options?</div><div class="dc-a no">No — show options directly</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PATTERN 08 ════ -->
+  <div class="pattern-entry" data-cat="error">
+    <div class="pattern-index">
+      <div class="p-num">08</div>
+      <div class="p-cat">Error</div>
+    </div>
+    <div class="pattern-content">
+      <div class="p-header">
+        <div class="p-name">SYSTEM ERROR RECOVERY</div>
+        <div class="channel-tags">
+          <span class="ch-tag both">Both Channels</span>
+        </div>
+      </div>
+
+      <div class="p-grid">
+        <div class="p-cell">
+          <div class="cell-label">Trigger Condition</div>
+          <div class="cell-body">Backend system unavailable, API timeout, data retrieval failure, or partial data returned. AI cannot complete the requested task due to a technical failure outside the user's control.</div>
+        </div>
+        <div class="p-cell">
+          <div class="cell-label">Behavioral Definition</div>
+          <div class="cell-body">AI acknowledges the failure honestly, explains what it tried to do, and gives the user a clear next step. Never pretends the task completed. Never gives a generic "something went wrong" with no path forward.</div>
+        </div>
+        <div class="p-cell">
+          <div class="cell-label">Decision Logic</div>
+          <div class="cell-body mono">IF system.error<br>→ ACKNOWLEDGE: be specific<br>→ STATE: what was attempted<br>→ OFFER: retry / alternate path<br>→ NEVER: false success signal<br>→ NEVER: "please try again" only</div>
+        </div>
+      </div>
+
+      <div class="p-examples">
+        <div class="example-col chat-col">
+          <h5>💬 Chat — API Timeout</h5>
+          <div class="dialogue-mini">
+            <div class="dm a"><div class="dm-label">Joule</div>I wasn't able to retrieve the invoice details — SAP S/4HANA isn't responding right now. Your approval was not submitted.<br><br>You can try again in a moment, or access the invoice directly in the Fiori launchpad. Want me to try again?</div>
+          </div>
+        </div>
+        <div class="example-col voice-col">
+          <h5>🎙 Voice — API Timeout</h5>
+          <div class="dialogue-mini">
+            <div class="dm a"><div class="dm-label">Joule</div>I'm having trouble connecting to the system right now. I haven't submitted anything. You can try again in a moment — want me to retry?</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="failure-strip">
+        <div class="fs-label">Failure Modes</div>
+        <div class="fs-body"><strong>F1:</strong> Generic "something went wrong" with no specificity — user doesn't know if action ran or not, calls support.<br><strong>F2:</strong> False success signal on partial completion — user believes invoice was approved, payment missed.<br><strong>F3:</strong> "Please try again later" with no path — user abandons task entirely, moves to manual process.</div>
+      </div>
+
+      <div class="decision-row">
+        <div class="decision-cell"><div class="dc-q">Confirm action NOT taken?</div><div class="dc-a yes">Yes — explicitly, always</div></div>
+        <div class="decision-cell"><div class="dc-q">Name the failing system?</div><div class="dc-a cond">If known — helps user triage</div></div>
+        <div class="decision-cell"><div class="dc-q">Offer alternate path?</div><div class="dc-a yes">Always — never dead end</div></div>
+        <div class="decision-cell"><div class="dc-q">Retry without user prompt?</div><div class="dc-a no">No — ask first, user controls</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PRINCIPLES ══ -->
+  <div class="principles">
+    <h2>GOVERNING PRINCIPLES</h2>
+    <p class="principles-sub">The rules that determine when and how to apply these patterns — and when not to.</p>
+    <div class="principles-grid">
+      <div class="principle-cell">
+        <div class="pc-num">01</div>
+        <div class="pc-title">Channel-native, not channel-adapted</div>
+        <div class="pc-body">Voice flows are designed from scratch for voice cognition. Never adapt a chat flow for voice by removing visual elements. The medium changes the design fundamentally — timing, information density, confirmation patterns, and option limits are all different.</div>
+      </div>
+      <div class="principle-cell">
+        <div class="pc-num">02</div>
+        <div class="pc-title">Failure is a first-class design surface</div>
+        <div class="pc-body">Every pattern must define its failure modes explicitly. An undesigned error state will produce a worse default than a designed one. "We'll handle that later" is a product decision that ships user-facing failures.</div>
+      </div>
+      <div class="principle-cell">
+        <div class="pc-num">03</div>
+        <div class="pc-title">AI authority has explicit boundaries</div>
+        <div class="pc-body">Define what the AI can do, what it flags but allows, and what it cannot do at all — before designing flows. These boundaries are not the AI's job to infer. They belong in the system prompt and the pattern spec.</div>
+      </div>
+      <div class="principle-cell">
+        <div class="pc-num">04</div>
+        <div class="pc-title">Constrain options, don't open them</div>
+        <div class="pc-body">Open questions ("What would you like to do?") have lower completion rates than constrained menus. Enterprise users under time pressure need a decision set — not a blank field. When in doubt, provide 3 named options.</div>
+      </div>
+      <div class="principle-cell">
+        <div class="pc-num">05</div>
+        <div class="pc-title">Prompt layer ≠ UI layer</div>
+        <div class="pc-body">Prompts control language and decision logic. The design system controls visual indicators (icons, badges, colors). Never let the model generate its own UI elements — they will be inconsistent and break when the system changes.</div>
+      </div>
+      <div class="principle-cell">
+        <div class="pc-num">06</div>
+        <div class="pc-title">Trust is designed, not assumed</div>
+        <div class="pc-body">Users trust AI systems that tell them what they're doing, what was logged, who was notified, and what happens next. Transparency about AI actions — especially irreversible ones — is a design requirement, not a nice-to-have.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ HOW TO USE ══ -->
+  <div class="how-to">
+    <div class="ht-label">For Product Teams</div>
+    <div class="ht-title">HOW TO USE THIS LIBRARY</div>
+    <div class="ht-grid">
+      <div class="ht-step">
+        <div class="ht-step-num">01</div>
+        <div class="ht-step-title">Identify your trigger</div>
+        <div class="ht-step-body">Match your use case to a pattern's trigger condition. Multiple patterns may apply to a single flow — stack them deliberately.</div>
+      </div>
+      <div class="ht-step">
+        <div class="ht-step-num">02</div>
+        <div class="ht-step-title">Check your channel</div>
+        <div class="ht-step-body">Patterns tagged "Both" still have channel-specific implementations. Read both columns — do not default to the chat version for voice.</div>
+      </div>
+      <div class="ht-step">
+        <div class="ht-step-num">03</div>
+        <div class="ht-step-title">Review failure modes first</div>
+        <div class="ht-step-body">Before implementing, read the failure modes section. These are the most common places where teams deviate from the pattern and introduce user-facing bugs.</div>
+      </div>
+      <div class="ht-step">
+        <div class="ht-step-num">04</div>
+        <div class="ht-step-title">Adapt, don't override</div>
+        <div class="ht-step-body">Patterns can be adapted for context — but changes to trigger conditions or decision logic must be documented. Silent deviations make the library unreliable for other teams.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span>CONVERSATIONAL PATTERN LIBRARY · SAP JOULE · V1.0</span>
+  <span>8 PATTERNS · 2 CHANNELS · 16 FAILURE MODES</span>
+</footer>
+
+<script>
+  function filter(cat, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.pattern-entry').forEach(p => {
+      if (cat === 'all' || p.dataset.cat === cat) {
+        p.classList.remove('hidden');
+      } else {
+        p.classList.add('hidden');
+      }
+    });
+  }
+</script>
+</body>
+</html>

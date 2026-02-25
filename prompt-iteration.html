@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Iteration Log — Conversation Design Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inconsolata:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f4ef;
+    --surface: #ffffff;
+    --surface2: #f0ece4;
+    --border: #e0d9ce;
+    --ink: #1a1714;
+    --muted: #8a8070;
+    --accent: #c84b2f;
+    --accent2: #2f6dc8;
+    --accent3: #2a8a5a;
+    --warn: #c87a2f;
+    --tag-bg: #f0e8e0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ——— HEADER ——— */
+  header {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 56px 56px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: 'PROMPT\AITER-\AATION';
+    white-space: pre;
+    font-family: 'Inconsolata', monospace;
+    font-size: 120px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.04);
+    position: absolute;
+    right: -20px;
+    top: -10px;
+    line-height: 0.9;
+    pointer-events: none;
+  }
+  .header-label {
+    font-family: 'Inconsolata', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 700;
+    line-height: 1.1;
+    max-width: 600px;
+    margin-bottom: 8px;
+  }
+  h1 em {
+    font-style: italic;
+    font-weight: 400;
+    color: #aaa;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: #888;
+    max-width: 520px;
+    margin-top: 16px;
+    line-height: 1.7;
+  }
+  .header-meta {
+    display: flex;
+    gap: 32px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+  .hm-item { font-size: 11px; color: #666; }
+  .hm-item span { color: #ccc; display: block; font-size: 13px; margin-top: 2px; font-family: 'Inconsolata', monospace; }
+
+  /* ——— LAYOUT ——— */
+  .main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 56px;
+  }
+
+  /* ——— SCENARIO BAR ——— */
+  .scenario-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent2);
+    padding: 20px 24px;
+    margin-bottom: 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+  }
+  .sb-item label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .sb-item p { font-size: 13px; color: var(--ink); }
+
+  /* ——— ITERATION BLOCK ——— */
+  .iteration {
+    margin-bottom: 48px;
+    position: relative;
+  }
+  .iter-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 0;
+  }
+  .iter-num {
+    font-family: 'Inconsolata', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    min-width: 80px;
+    padding-top: 18px;
+    text-align: right;
+  }
+  .iter-body { flex: 1; }
+  .iter-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    padding: 16px 0 6px;
+    border-top: 2px solid var(--ink);
+  }
+  .iter-subtitle { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 750px) { .two-col { grid-template-columns: 1fr; } }
+
+  .box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px;
+  }
+  .box-label {
+    font-family: 'Inconsolata', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .prompt-text {
+    font-family: 'Inconsolata', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--ink);
+    background: var(--surface2);
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    white-space: pre-wrap;
+  }
+  .output-text {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--ink);
+    border-left: 3px solid var(--border);
+    padding-left: 14px;
+  }
+
+  /* score badge */
+  .score-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+  }
+  .score-badge {
+    font-family: 'Inconsolata', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border: 1px solid;
+  }
+  .score-badge.bad { color: var(--accent); border-color: var(--accent); background: rgba(200,75,47,0.06); }
+  .score-badge.warn { color: var(--warn); border-color: var(--warn); background: rgba(200,122,47,0.06); }
+  .score-badge.ok { color: var(--accent3); border-color: var(--accent3); background: rgba(42,138,90,0.06); }
+  .score-badge.good { color: var(--accent2); border-color: var(--accent2); background: rgba(47,109,200,0.06); }
+
+  /* diagnosis box */
+  .diagnosis {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+  .diag-label {
+    font-family: 'Inconsolata', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .diag-label.problem { color: var(--accent); }
+  .diag-label.fix { color: var(--accent2); }
+  .diag-label.change { color: var(--accent3); }
+  .diag-body { font-size: 12px; color: var(--muted); line-height: 1.7; }
+  .diag-body strong { color: var(--ink); }
+
+  /* diff highlight */
+  .diff-add { background: rgba(42,138,90,0.12); color: var(--accent3); }
+  .diff-remove { background: rgba(200,75,47,0.1); color: var(--accent); text-decoration: line-through; }
+  .diff-change { background: rgba(47,109,200,0.1); color: var(--accent2); }
+
+  /* connector */
+  .connector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0 8px 100px;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    font-family: 'Inconsolata', monospace;
+  }
+  .connector::before {
+    content: '↓';
+    font-size: 18px;
+    color: var(--border);
+  }
+
+  /* ——— FINAL COMPARISON ——— */
+  .final-compare {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 32px;
+    margin: 40px 0;
+  }
+  .fc-label {
+    font-family: 'Inconsolata', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 20px;
+  }
+  .fc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .fc-col h4 {
+    font-family: 'Inconsolata', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+  }
+  .fc-col.before h4 { color: var(--accent); }
+  .fc-col.after h4 { color: var(--accent3); }
+  .fc-prompt {
+    font-family: 'Inconsolata', monospace;
+    font-size: 11px;
+    line-height: 1.7;
+    color: #bbb;
+    white-space: pre-wrap;
+  }
+
+  /* ——— LEARNINGS ——— */
+  .learnings {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .learning-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--ink);
+    padding: 20px;
+  }
+  .lc-num {
+    font-family: 'Inconsolata', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    margin-bottom: 6px;
+  }
+  .lc-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .lc-body { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .section-intro { color: var(--muted); font-size: 13px; margin-bottom: 32px; max-width: 600px; line-height: 1.7; }
+
+  footer {
+    background: var(--ink);
+    color: #666;
+    padding: 24px 56px;
+    font-family: 'Inconsolata', monospace;
+    font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: 'Inconsolata', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: var(--tag-bg);
+    color: var(--muted);
+    padding: 3px 8px;
+    margin-right: 6px;
+    margin-bottom: 6px;
+  }
+  .tag.red { background: rgba(200,75,47,0.08); color: var(--accent); }
+  .tag.blue { background: rgba(47,109,200,0.08); color: var(--accent2); }
+  .tag.green { background: rgba(42,138,90,0.08); color: var(--accent3); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-label">Conversation Design · Prompt Engineering</div>
+  <h1>Prompt Iteration Log<br><em>How a prompt earns its behavior</em></h1>
+  <p class="header-sub">A documented process of iterating a single prompt from naive first draft to production-quality — showing diagnosis, reasoning, and measurable improvement at each step. This is prompt design as a discipline, not trial and error.</p>
+  <div class="header-meta">
+    <div class="hm-item">TASK<span>Invoice flag explanation</span></div>
+    <div class="hm-item">ITERATIONS<span>5 versions</span></div>
+    <div class="hm-item">MODEL<span>LLM / Joule agent</span></div>
+    <div class="hm-item">CHANNEL<span>Chat (enterprise)</span></div>
+  </div>
+</header>
+
+<div class="main">
+
+  <div class="scenario-bar">
+    <div class="sb-item">
+      <label>Task</label>
+      <p>When Joule detects an invoice exceeds PO limit, explain the issue to the user clearly and offer resolution options</p>
+    </div>
+    <div class="sb-item">
+      <label>User</label>
+      <p>AP Manager — time-pressured, finance literate, needs to act quickly and confidently</p>
+    </div>
+    <div class="sb-item">
+      <label>Success criteria</label>
+      <p>User understands the issue in one read, knows their options, and can act without follow-up questions</p>
+    </div>
+  </div>
+
+  <!-- ══ ITERATION 1 ══ -->
+  <div class="iteration">
+    <div class="iter-header">
+      <div class="iter-num">v1.0</div>
+      <div class="iter-body">
+        <div class="iter-title">The Naive First Draft</div>
+        <div class="iter-subtitle">Written without constraints. See what the model does by default.</div>
+
+        <div class="two-col">
+          <div class="box">
+            <div class="box-label">Prompt</div>
+            <div class="prompt-text">You are a helpful assistant. Tell the user their invoice has a problem and ask what they want to do.</div>
+          </div>
+          <div class="box">
+            <div class="box-label">Model Output</div>
+            <div class="output-text">Hi there! I noticed there seems to be an issue with one of your invoices. It looks like there might be a problem that needs your attention. Would you like to take a look at it and let me know how you'd like to proceed? I'm here to help!</div>
+          </div>
+        </div>
+
+        <div class="score-row">
+          <span class="score-badge bad">Specificity: 1/5</span>
+          <span class="score-badge bad">Actionability: 1/5</span>
+          <span class="score-badge bad">Tone: 1/5 (too casual)</span>
+          <span class="score-badge warn">Length: ok</span>
+        </div>
+
+        <div class="diagnosis">
+          <div class="diag-label problem">Problem Diagnosis</div>
+          <div class="diag-body">
+            <strong>Three critical failures:</strong><br>
+            1. No data injected — model has nothing to say so it generates vague filler ("seems to be an issue")<br>
+            2. No role definition — "helpful assistant" gives the model no context about enterprise finance<br>
+            3. No output structure — model defaults to conversational filler with zero actionable content<br><br>
+            The output could apply to any invoice issue anywhere. It tells the user nothing and forces them to ask follow-up questions — the worst possible outcome for a time-pressured AP manager.
+          </div>
+        </div>
+
+        <div>
+          <span class="tag red">Missing: structured data</span>
+          <span class="tag red">Missing: role context</span>
+          <span class="tag red">Missing: output format</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">DIAGNOSIS APPLIED → ITERATION 2</div>
+
+  <!-- ══ ITERATION 2 ══ -->
+  <div class="iteration">
+    <div class="iter-header">
+      <div class="iter-num">v2.0</div>
+      <div class="iter-body">
+        <div class="iter-title">Inject Data + Define Role</div>
+        <div class="iter-subtitle">Fix the two biggest structural gaps first.</div>
+
+        <div class="diagnosis" style="margin-bottom: 16px;">
+          <div class="diag-label fix">Changes Made</div>
+          <div class="diag-body">
+            <strong>Added:</strong> Structured invoice data injected as variables. Role defined as SAP finance assistant. Explicit instruction to name the specific issue.
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="box">
+            <div class="box-label">Prompt v2</div>
+            <div class="prompt-text">You are SAP Joule, an AI assistant for enterprise finance workflows.
+
+Invoice data:
+- Vendor: {{vendor_name}}
+- Amount: {{invoice_amount}}
+- PO limit: {{po_limit}}
+- Overage: {{overage_amount}}
+
+The invoice exceeds the PO limit. Tell the user what the specific problem is and ask what they want to do.</div>
+          </div>
+          <div class="box">
+            <div class="box-label">Model Output</div>
+            <div class="output-text">This invoice from Global Supply for $231,000 exceeds your purchase order limit of $200,000 by $31,000. This needs to be resolved before approval can proceed. What would you like to do?</div>
+          </div>
+        </div>
+
+        <div class="score-row">
+          <span class="score-badge ok">Specificity: 3/5</span>
+          <span class="score-badge warn">Actionability: 2/5</span>
+          <span class="score-badge ok">Tone: 3/5</span>
+          <span class="score-badge warn">Length: ok</span>
+        </div>
+
+        <div class="diagnosis">
+          <div class="diag-label problem">Remaining Problems</div>
+          <div class="diag-body">
+            <strong>Better — but still failing on actionability.</strong><br>
+            The user now knows the problem precisely. But "What would you like to do?" is an open question that forces the user to invent their own options. In an enterprise context, users need constrained, named choices — not a blank field.<br><br>
+            Also: "needs to be resolved before approval can proceed" is passive and slightly alarming without context. An AP manager reading this cold may not know if this is a blocker, a warning, or a hard stop.
+          </div>
+        </div>
+
+        <div>
+          <span class="tag green">Fixed: specific amounts</span>
+          <span class="tag green">Fixed: role context</span>
+          <span class="tag red">Still missing: explicit options</span>
+          <span class="tag red">Still missing: severity framing</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">DIAGNOSIS APPLIED → ITERATION 3</div>
+
+  <!-- ══ ITERATION 3 ══ -->
+  <div class="iteration">
+    <div class="iter-header">
+      <div class="iter-num">v3.0</div>
+      <div class="iter-body">
+        <div class="iter-title">Add Constrained Options + Severity Signal</div>
+        <div class="iter-subtitle">Give the user a decision menu, not a blank canvas.</div>
+
+        <div class="diagnosis" style="margin-bottom: 16px;">
+          <div class="diag-label fix">Changes Made</div>
+          <div class="diag-body">
+            <strong>Added:</strong> Explicit resolution options as a list. Severity framing ("this is a flag, not a hard block"). Instruction to format options clearly.
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="box">
+            <div class="box-label">Prompt v3</div>
+            <div class="prompt-text">You are SAP Joule, an AI assistant for enterprise finance.
+
+Invoice data:
+- Vendor: {{vendor_name}}
+- Amount: {{invoice_amount}}
+- PO limit: {{po_limit}}
+- Overage: {{overage_amount}}
+
+The invoice exceeds the PO limit. This is a policy flag — the user CAN still approve with an override, but must choose a resolution path.
+
+Present the issue clearly with the specific numbers. Then offer exactly these 3 options:
+1. Request a PO amendment
+2. Approve with override (requires reason)
+3. Reject the invoice
+
+Do not suggest any other options. Do not ask open questions. Be direct and professional — this user is a finance professional.</div>
+          </div>
+          <div class="box">
+            <div class="box-label">Model Output</div>
+            <div class="output-text">⚠ This invoice from Global Supply ($231,000) exceeds your PO limit of $200,000 by $31,000.<br><br>
+            This is a policy flag — you can still proceed, but need to choose a resolution:<br><br>
+            1. Request a PO amendment<br>
+            2. Approve with override (you'll provide a reason)<br>
+            3. Reject the invoice<br><br>
+            Which would you like to do?</div>
+          </div>
+        </div>
+
+        <div class="score-row">
+          <span class="score-badge ok">Specificity: 4/5</span>
+          <span class="score-badge ok">Actionability: 4/5</span>
+          <span class="score-badge ok">Tone: 4/5</span>
+          <span class="score-badge warn">Structure: 3/5</span>
+        </div>
+
+        <div class="diagnosis">
+          <div class="diag-label problem">Remaining Problems</div>
+          <div class="diag-body">
+            <strong>Significantly better. Two subtle issues remain:</strong><br>
+            1. "Which would you like to do?" at the end is redundant — the numbered list already implies a choice. It adds a sentence without adding meaning.<br><br>
+            2. The warning emoji (⚠) was not instructed — the model added it. In an enterprise UI this might render inconsistently or be inappropriate depending on severity level. Visual markers should be controlled by the design system, not generated ad-hoc by the model.<br><br>
+            3. Missing: escalation path. What if the user isn't sure? A 4th option (escalate to controller) is needed for compliance edge cases — but must be surfaced differently to avoid option overload.
+          </div>
+        </div>
+
+        <div>
+          <span class="tag green">Fixed: clear options</span>
+          <span class="tag green">Fixed: severity context</span>
+          <span class="tag red">New issue: uncontrolled emoji</span>
+          <span class="tag red">Missing: escalation path</span>
+          <span class="tag red">Redundant closing question</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">DIAGNOSIS APPLIED → ITERATION 4</div>
+
+  <!-- ══ ITERATION 4 ══ -->
+  <div class="iteration">
+    <div class="iter-header">
+      <div class="iter-num">v4.0</div>
+      <div class="iter-body">
+        <div class="iter-title">Control Output Format + Add Escalation</div>
+        <div class="iter-subtitle">Lock down visual formatting. Add the escalation path without overloading the user.</div>
+
+        <div class="diagnosis" style="margin-bottom: 16px;">
+          <div class="diag-label fix">Changes Made</div>
+          <div class="diag-body">
+            <strong>Added:</strong> Explicit instruction to never use emojis or icons — those are rendered by the UI layer. Escalation option added as a secondary path, not a primary button. Removed closing question.
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="box">
+            <div class="box-label">Prompt v4</div>
+            <div class="prompt-text">You are SAP Joule, an AI assistant for enterprise finance.
+
+Invoice data:
+- Vendor: {{vendor_name}}
+- Amount: {{invoice_amount}}
+- PO limit: {{po_limit}}
+- Overage: {{overage_amount}}
+
+The invoice exceeds the PO limit. This is a policy flag — the user CAN still proceed with an override.
+
+Rules:
+- Never use emojis, icons, or special characters. The UI handles visual indicators.
+- Do not end with a question. The numbered list implies a choice.
+- Present exactly 3 primary options as a numbered list.
+- After the list, add one line: "If you're unsure, I can escalate this to your controller."
+
+Tone: Direct, professional. The user is a finance expert — do not over-explain.</div>
+          </div>
+          <div class="box">
+            <div class="box-label">Model Output</div>
+            <div class="output-text">This invoice from Global Supply ($231,000) exceeds your PO limit of $200,000 by $31,000.<br><br>
+            This is a policy flag — you can still proceed by choosing a resolution path:<br><br>
+            1. Request a PO amendment<br>
+            2. Approve with override (you'll provide a brief reason for the audit trail)<br>
+            3. Reject the invoice<br><br>
+            If you're unsure, I can escalate this to your controller.</div>
+          </div>
+        </div>
+
+        <div class="score-row">
+          <span class="score-badge good">Specificity: 5/5</span>
+          <span class="score-badge good">Actionability: 5/5</span>
+          <span class="score-badge good">Tone: 5/5</span>
+          <span class="score-badge ok">Format control: 4/5</span>
+        </div>
+
+        <div class="diagnosis">
+          <div class="diag-label problem">One Remaining Edge Case</div>
+          <div class="diag-body">
+            <strong>Almost production-ready. One edge case to handle:</strong><br>
+            What if the overage is very small (e.g. $50 on a $200K PO)? The current prompt treats all overages identically. A $50 overage likely warrants different language and possibly auto-approval under a threshold — this is a routing decision, not a prompt-only problem, but the prompt should not contradict the routing logic.<br><br>
+            Also: "audit trail" in option 2 is helpful context but slightly jargon-heavy for a first-read. Test whether it improves or slows comprehension with real users.
+          </div>
+        </div>
+
+        <div>
+          <span class="tag green">Fixed: no emojis</span>
+          <span class="tag green">Fixed: escalation path</span>
+          <span class="tag green">Fixed: no redundant question</span>
+          <span class="tag blue">Edge case: small overage routing</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">DIAGNOSIS APPLIED → ITERATION 5 (PRODUCTION)</div>
+
+  <!-- ══ ITERATION 5 ══ -->
+  <div class="iteration">
+    <div class="iter-header">
+      <div class="iter-num">v5.0 ✓</div>
+      <div class="iter-body">
+        <div class="iter-title">Production Prompt — Conditional Logic + Threshold Handling</div>
+        <div class="iter-subtitle">Add conditional behavior for overage severity. This is the prompt that ships.</div>
+
+        <div class="diagnosis" style="margin-bottom: 16px;">
+          <div class="diag-label fix">Changes Made</div>
+          <div class="diag-body">
+            <strong>Added:</strong> Conditional tone instruction based on overage percentage (minor vs. significant). Softened "audit trail" to "brief note." Minor cleanup of transition language.
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="box">
+            <div class="box-label">Final Production Prompt</div>
+            <div class="prompt-text">You are SAP Joule, an AI assistant for enterprise finance workflows.
+
+Invoice data:
+- Vendor: {{vendor_name}}
+- Amount: {{invoice_amount}}
+- PO number: {{po_number}}
+- PO limit: {{po_limit}}
+- Overage: {{overage_amount}}
+- Overage %: {{overage_pct}}
+
+The invoice exceeds the PO limit. Present this as a policy flag that the user can resolve.
+
+Conditional tone:
+- If overage_pct < 5%: Use neutral, matter-of-fact language. ("slight overage")
+- If overage_pct >= 5%: Use clear but calm flagging language. ("exceeds your PO limit by X")
+
+Format rules:
+- No emojis or special characters. UI layer handles visual indicators.
+- State the specific vendor, amount, and overage in the first sentence.
+- Present exactly 3 numbered options.
+- End with: "If you're unsure, I can escalate this to your controller."
+- Do not end with a question. Do not add any sentence after the escalation line.
+
+Tone: Direct and professional. This user is a finance expert.</div>
+          </div>
+          <div class="box">
+            <div class="box-label">Output — Large Overage (15%)</div>
+            <div class="output-text">This invoice from Global Supply ($231,000) exceeds your PO #5501 limit of $200,000 by $31,000.<br><br>
+            This is a policy flag — choose how to resolve it:<br><br>
+            1. Request a PO amendment<br>
+            2. Approve with override (you'll add a brief note for the record)<br>
+            3. Reject the invoice<br><br>
+            If you're unsure, I can escalate this to your controller.</div>
+            <br>
+            <div class="box-label" style="margin-top: 12px;">Output — Small Overage (2%)</div>
+            <div class="output-text">This invoice from Acme Corp ($204,000) has a slight overage of $4,000 against PO #4420-B ($200,000).<br><br>
+            You can resolve this before approving:<br><br>
+            1. Request a PO amendment<br>
+            2. Approve with override (you'll add a brief note for the record)<br>
+            3. Reject the invoice<br><br>
+            If you're unsure, I can escalate this to your controller.</div>
+          </div>
+        </div>
+
+        <div class="score-row">
+          <span class="score-badge good">Specificity: 5/5</span>
+          <span class="score-badge good">Actionability: 5/5</span>
+          <span class="score-badge good">Tone: 5/5</span>
+          <span class="score-badge good">Format control: 5/5</span>
+          <span class="score-badge good">Edge cases: handled</span>
+        </div>
+
+        <div class="diagnosis" style="border-left: 3px solid var(--accent3);">
+          <div class="diag-label change">Why This Prompt Works</div>
+          <div class="diag-body">
+            <strong>Every sentence earns its place:</strong><br>
+            — Sentence 1: All critical data (who, how much, by how much) in one scan-friendly line<br>
+            — Sentence 2: Reframes "problem" as "resolvable flag" — reduces anxiety, increases action rate<br>
+            — Options 1–3: Complete decision space, no open questions, no invented paths<br>
+            — Final line: Escalation path available without cluttering the primary options<br><br>
+            <strong>What the prompt controls vs. what the UI controls:</strong><br>
+            The prompt controls language, structure, and conditional tone. The UI layer controls visual indicators (⚠ badge), button rendering, and option highlighting. This separation is intentional — prompts that generate their own UI elements become brittle when the design system changes.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINAL COMPARISON -->
+  <div class="final-compare">
+    <div class="fc-label">Before vs After — Full Comparison</div>
+    <div class="fc-grid">
+      <div class="fc-col before">
+        <h4>V1.0 — NAIVE</h4>
+        <div class="fc-prompt">Hi there! I noticed there seems to be an issue with one of your invoices. It looks like there might be a problem that needs your attention. Would you like to take a look at it and let me know how you'd like to proceed? I'm here to help!</div>
+      </div>
+      <div class="fc-col after">
+        <h4>V5.0 — PRODUCTION</h4>
+        <div class="fc-prompt">This invoice from Global Supply ($231,000) exceeds your PO #5501 limit of $200,000 by $31,000.
+
+This is a policy flag — choose how to resolve it:
+
+1. Request a PO amendment
+2. Approve with override (you'll add a brief note for the record)
+3. Reject the invoice
+
+If you're unsure, I can escalate this to your controller.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEARNINGS -->
+  <h2>Transferable Prompt Design Principles</h2>
+  <p class="section-intro">Six lessons extracted from this iteration process. These apply to any LLM-powered enterprise conversation, not just invoice approval.</p>
+
+  <div class="learnings">
+    <div class="learning-card">
+      <div class="lc-num">Lesson 01</div>
+      <div class="lc-title">Data in, data out</div>
+      <div class="lc-body">A prompt with no injected data produces vague output. Always structure what the model needs to know as explicit variables — never rely on the model to "figure it out."</div>
+    </div>
+    <div class="learning-card">
+      <div class="lc-num">Lesson 02</div>
+      <div class="lc-title">Constrain options explicitly</div>
+      <div class="lc-body">"What would you like to do?" forces users to invent solutions. Enterprise users need a named, bounded decision set — the model must be told to present exactly N options.</div>
+    </div>
+    <div class="learning-card">
+      <div class="lc-num">Lesson 03</div>
+      <div class="lc-title">Separate prompt layer from UI layer</div>
+      <div class="lc-body">Never let the model generate emojis, icons, or visual markers. These belong to the design system. Prompts that generate their own UI break when the system changes.</div>
+    </div>
+    <div class="learning-card">
+      <div class="lc-num">Lesson 04</div>
+      <div class="lc-title">Conditional tone is a prompt concern</div>
+      <div class="lc-body">The same factual situation at different severity levels deserves different language. Encode this logic in the prompt — don't rely on post-processing or a separate model call.</div>
+    </div>
+    <div class="learning-card">
+      <div class="lc-num">Lesson 05</div>
+      <div class="lc-title">Escalation as a designed path</div>
+      <div class="lc-body">Escalation to a human must be offered before the user gives up — not after 3 failed attempts. Design it as a visible exit at the bottom of every flag flow.</div>
+    </div>
+    <div class="learning-card">
+      <div class="lc-num">Lesson 06</div>
+      <div class="lc-title">End without a question</div>
+      <div class="lc-body">If the output already presents clear options, a closing question is redundant noise. Remove it. Silence after a decision menu is more confident than asking "what would you like to do?"</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span>Prompt Iteration Log · Invoice Flag Explanation · SAP Joule</span>
+  <span>Conversation Design Portfolio · 5 iterations documented</span>
+</footer>
+
+</body>
+</html>
